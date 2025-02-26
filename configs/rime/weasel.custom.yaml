@@ -1,0 +1,62 @@
+# windows weasel 使用的配置
+customization:
+  distribution_code_name: Weasel
+  distribution_version: 0.16.3
+  generator: "Weasel::UIStyleSettings"
+  modified_time: "Thu Apr 17 20:45:46 2025"
+  rime_version: 1.11.2
+patch:
+  show_notifications:  false
+  style:
+    color_scheme: gruvbox
+    font_face: "JetBrainsMono Nerd Font"
+    font_point: 13
+    horizontal: false
+    inline_preedit: false
+    fullscreen: false # 全屏排列：true；false
+    vertical_text: false # 竖排：true；false
+    vertical_text_left_to_right: false # 竖排下从左到右：true；false
+    vertical_text_with_wrap: false # 竖排下，自动换行：true；false
+    vertical_auto_reverse: false # 竖排下，输入窗口在上方时倒序排列：true；false
+    layout:
+      round_corner: 8       # 高亮区域圆角
+      corner_radius: 8     # 候选框圆角
+      border: 8             # 外边框与内容的距离
+      border_width: 20      # 边框线宽
+      candidate_spacing: 6  # 候选词之间的间距
+      hilite_padding: 0     # 高亮项的内边距
+      hilite_spacing: 4     # 高亮项之间的间距
+      margin_x: 4          # 水平方向的内边距
+      margin_y: 4           # 垂直方向的内边距
+      shadow_offset_x: 0    # 阴影偏移（横向）
+      shadow_offset_y: 0    # 阴影偏移（纵向）
+      shadow_radius: 6      # 阴影模糊度
+      spacing: 8            # 整体元素之间的通用间距
+  preset_color_schemes:
+# 小狼毫配色在线设计：
+# [RIME 西米](https://fxliang.github.io/RimeSeeMe/)
+    gruvbox:
+      name: ahowrime
+      author: ahaooahaz@outlook.com
+      back_color: 0x282828
+      border_color: 0x282828
+      text_color: 0x8499A8
+      hilited_text_color: 0x282828
+      hilited_back_color: 0x8499A8
+      hilited_candidate_text_color: 0xC7F1FB
+      hilited_candidate_back_color: 0x454950
+      candidate_text_color: 0xB2DBEB
+      comment_text_color: 0x748392
+  app_options:
+    Code.exe:
+      ascii_mode: true # 默认使用英文输入
+    gvim.exe:
+      ascii_mode: true
+    bash.exe:
+      ascii_mode: true
+    powershell.exe:
+      ascii_mode: true
+    WindowsTerminal.exe:
+      ascii_mode: true
+    nu.exe:
+      ascii_mode: true

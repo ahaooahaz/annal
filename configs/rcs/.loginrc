@@ -3,7 +3,6 @@ set -a
 #############
 # Functions #
 #############
-
 # wrapper for source and eval.
 function include() {
     case $1 in
@@ -97,7 +96,33 @@ function ssht () {
     ssh -t "$@" "tmux attach || tmux new"
 }
 
+function condasetup() {
+    __conda_setup="$('$HOME/.miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+    if [ $? -eq 0 ]; then
+        eval "$__conda_setup"
+    else
+        if [ -f "$HOME/.miniconda3/etc/profile.d/conda.sh" ]; then
+            . "$HOME/.miniconda3/etc/profile.d/conda.sh"
+        else
+            export PATH="$HOME/.miniconda3/bin:$PATH"
+        fi
+    fi
+    unset __conda_setup
+}
 set +a
+
+add_to() {
+    local env="$1"
+    shift
+    eval "local current_val=\$$env"
+    for dir in "$@"; do
+    case ":$current_val:" in
+      *":$dir:"*) ;;
+      *) current_val="$dir:$current_val" ;;
+    esac
+    done
+    eval "export $env=\"${current_val%:}\""
+}
 
 #######
 # ENV #
@@ -106,10 +131,6 @@ set +a
 export XDG_CONFIG_HOME=~/.config
 export XDG_CACHE_HOME=~/.cache
 export XDG_DATA_HOME=~/.local/share
-
-# runtime env.
-export PATH="$HOME/.local/bin:$GOPATH/bin:$HOME/.cargo/bin:$PATH"
-export LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH"
 
 # C/C++ env.
 export C_INCLUDE_PATH="$HOME/.local/include:$C_INCLUDE_PATH"
@@ -128,7 +149,7 @@ if [[ -s "$HOME/.gvm/scripts/gvm" ]]; then
     }
     set +a
 else
-    export GOROOT=$HOME/.local/dev/go
+    add_to PATH $HOME/.local/go/bin
 fi
 export GOPATH=$ZGOPATH
 
@@ -137,6 +158,10 @@ export LUA_LOCAL_PATH=$HOME/.luarocks
 export LUA_PATH="$LUA_LOCAL_PATH/share/lua/5.1/?.lua;$LUA_LOCAL_PATH/share/lua/5.1/?/?.lua;;"
 
 export GPG_TTY=$(tty)
+
+# nvm env.
+NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 # input env.
 export GIT_EDITOR=nvim
@@ -151,26 +176,6 @@ export QT_IM_MODULE=ibus
 # private env.
 include -f ${HOME}/.inti_envrc
 
-#########
-# Alias #
-#########
-
-alias l='exa -lh --group-directories-first --git --time-style=long-iso'
-alias ls='ls --color=auto'
-
-alias v=nvim
-alias vi=nvim
-alias vim=nvim
-alias say=spd-say
-alias t=tmux
-
-alias kubectx='kubectl config use-context '
-
-alias kcat='kitty +kitten icat'
-alias kssh='kitty +kitten ssh'
-alias kdiff='kitty +kitten diff'
-
-alias open='xdg-open'
-alias grep='grep --color=auto'
-alias watch='watch ' # enable alias commands
-alias sudo='sudo ' # enable alias commands
+# runtime env.
+add_to PATH $HOME/.local/bin $HOME/.local/scripts $GOPATH/bin $HOME/.cargo/bin
+export LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH"

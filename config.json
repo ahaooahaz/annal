@@ -191,15 +191,35 @@
             ]
         },
         {
-            "name": "zsh",
+            "name": "shell",
             "links": [
                 {
-                    "dst": "configs/zsh",
-                    "link": "~/.config/zsh"
+                    "dst": "configs/rcs/.shrc",
+                    "link": "~/.zshrc"
                 },
                 {
-                    "dst": "configs/zsh/.zshenv",
+                    "dst": "configs/rcs/.loginrc",
                     "link": "~/.zshenv"
+                },
+                {
+                    "dst": "configs/rcs/.shrc",
+                    "link": "~/.bashrc"
+                },
+                {
+                    "dst": "configs/rcs/.loginrc",
+                    "link": "~/.profile"
+                }
+            ],
+            "actions": [
+                "link"
+            ]
+        },
+        {
+            "name": "ssh",
+            "links": [
+                {
+                    "dst": "configs/ssh/config",
+                    "link": "~/.ssh/config"
                 }
             ],
             "actions": [
@@ -210,16 +230,8 @@
             "name": "scripts",
             "links": [
                 {
-                    "dst": "scripts/docker-wechat.sh",
-                    "link": "~/.local/bin/docker-wechat.sh"
-                },
-                {
-                    "dst": "scripts/docker-wechat.work.sh",
-                    "link": "~/.local/bin/docker-wechat.work.sh"
-                },
-                {
-                    "dst": "scripts/jesus.sh",
-                    "link": "~/.local/bin/jesus.sh"
+                    "dst": "scripts/linux",
+                    "link": "~/.local/scripts"
                 }
             ],
             "actions": [
