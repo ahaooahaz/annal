@@ -225,6 +225,18 @@
             "actions": [
                 "link"
             ]
+        },
+        {
+            "name": "ssh",
+            "links": [
+                {
+                    "dst": "configs/ssh/config",
+                    "link": "~/.ssh/config"
+                }
+            ],
+            "actions": [
+                "link"
+            ]
         }
     ]
 }
