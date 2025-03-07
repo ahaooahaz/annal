@@ -45,12 +45,12 @@ local keys = {
     -- panes --
     -- panes: split panes
     {
-        key = [[\]],
+        key = [[-]],
         mods = mod.SUPER,
         action = act.SplitVertical({ domain = "CurrentPaneDomain" }),
     },
     {
-        key = [[-]],
+        key = [[\]],
         mods = mod.SUPER,
         action = act.SplitHorizontal({ domain = "CurrentPaneDomain" }),
     },
