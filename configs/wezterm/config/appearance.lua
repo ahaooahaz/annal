@@ -4,8 +4,8 @@ return {
     term = "xterm-256color",
     animation_fps = 60,
     max_fps = 60,
-    front_end = "WebGpu",
-    webgpu_power_preference = "HighPerformance",
+    front_end = "Software",
+    -- webgpu_power_preference = "HighPerformance",
 
     -- color scheme
     -- colors = colors,
@@ -27,7 +27,7 @@ return {
             source = { Color = "#1A1B26" },
             height = "100%",
             width = "100%",
-            opacity = 0.95,
+            opacity = 0.85,
         },
     },
 
