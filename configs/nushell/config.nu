@@ -10,6 +10,11 @@ $env.config.cursor_shape = {
   vi_insert: line # block, underscore, line, blink_block, blink_underscore, blink_line, inherit to skip setting cursor shape (block is the default)
   vi_normal: block # block, underscore, line, blink_block, blink_underscore, blink_line, inherit to skip setting cursor shape (underscore is the default)
 }
+$env.EDITOR = "nvim"
+
+## To add entries to PATH
+use std "path add"
+path add ~/.local/bin
 
 # ----------------------------------------
 # custom.nu
@@ -29,6 +34,7 @@ use scripts *
 # aliases
 # ----------------------------------------
 
-# nvim
 alias vim = nvim
 alias vi = nvim
+alias grep = grep --color=auto
+alias cat = open --raw
