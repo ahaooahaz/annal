@@ -8,7 +8,7 @@ customization:
 patch:
   show_notifications:  false
   style:
-    color_scheme: ahowrime
+    color_scheme: gruvbox
     font_face: "JetBrainsMono Nerd Font"
     font_point: 13
     horizontal: false
