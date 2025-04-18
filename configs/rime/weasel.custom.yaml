@@ -21,17 +21,17 @@ patch:
     layout:
       round_corner: 8       # 高亮区域圆角
       corner_radius: 8     # 候选框圆角
-      border: 8             # 外边框与内容的距离，适中留白
-      border_width: 20      # 边框线宽，适中减少厚重感
-      candidate_spacing: 6  # 候选词之间的间距，保持紧凑但不拥挤
-      hilite_padding: 6     # 高亮项的内边距，稍小点看起来更轻盈
-      hilite_spacing: 4     # 高亮项之间的间距，协调整体布局
-      margin_x: 10          # 水平方向的内边距
-      margin_y: 8           # 垂直方向的内边距，略小以节省空间
-      shadow_offset_x: 1    # 阴影偏移（横向），保留小偏移即可
-      shadow_offset_y: 2    # 阴影偏移（纵向），稍大点显得更立体
-      shadow_radius: 6      # 阴影模糊度，减少以保持清晰
-      spacing: 8            # 整体元素之间的通用间距，统一协调
+      border: 8             # 外边框与内容的距离
+      border_width: 20      # 边框线宽
+      candidate_spacing: 6  # 候选词之间的间距
+      hilite_padding: 0     # 高亮项的内边距
+      hilite_spacing: 4     # 高亮项之间的间距
+      margin_x: 4          # 水平方向的内边距
+      margin_y: 4           # 垂直方向的内边距
+      shadow_offset_x: 0    # 阴影偏移（横向）
+      shadow_offset_y: 0    # 阴影偏移（纵向）
+      shadow_radius: 6      # 阴影模糊度
+      spacing: 8            # 整体元素之间的通用间距
   preset_color_schemes:
 # 小狼毫配色在线设计：
 # [RIME 西米](https://fxliang.github.io/RimeSeeMe/)
