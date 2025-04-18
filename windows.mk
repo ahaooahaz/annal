@@ -1,5 +1,5 @@
 SHELL = cmd.exe
-TARGETS = wezterm nushell
+TARGETS = wezterm nushell rime
 
 env: $(TARGETS)
 
@@ -10,3 +10,7 @@ wezterm:
 nushell:
 	powershell -Command \
 	'robocopy "configs\\nushell\\" "$$env:USERPROFILE\\AppData\\Roaming\\nushell\\" /IS /R:0 /W:0 /V ; $$true'
+
+rime:
+	powershell -Command \
+	'robocopy "configs\\rime\\" "$$env:USERPROFILE\\AppData\\Roaming\\Rime\\" /IS /R:0 /W:0 /V ; $$true'
