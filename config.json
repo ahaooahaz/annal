@@ -171,26 +171,6 @@
             ]
         },
         {
-            "name": "env",
-            "links": [
-                {
-                    "dst": "configs/rcs/.bash_profile",
-                    "link": "~/.bash_profile"
-                },
-                {
-                    "dst": "configs/rcs/.envrc",
-                    "link": "~/.envrc"
-                },
-                {
-                    "dst": "configs/rcs/.profile",
-                    "link": "~/.profile"
-                }
-            ],
-            "actions": [
-                "link"
-            ]
-        },
-        {
             "name": "shell",
             "links": [
                 {
@@ -208,6 +188,14 @@
                 {
                     "dst": "configs/rcs/.loginrc",
                     "link": "~/.profile"
+                },
+                {
+                    "dst": "configs/rcs/.logoutrc",
+                    "link": "~/.zlogout"
+                },
+                {
+                    "dst": "configs/rcs/.logoutrc",
+                    "link": "~/.bash_logout"
                 }
             ],
             "actions": [

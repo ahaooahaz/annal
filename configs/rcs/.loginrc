@@ -104,7 +104,7 @@ function condasetup() {
         if [ -f "$HOME/.miniconda3/etc/profile.d/conda.sh" ]; then
             . "$HOME/.miniconda3/etc/profile.d/conda.sh"
         else
-            export PATH="$HOME/.miniconda3/bin:$PATH"
+            add_to PATH "$HOME/.miniconda3/bin"
         fi
     fi
     unset __conda_setup
@@ -178,4 +178,4 @@ include -f ${HOME}/.inti_envrc
 
 # runtime env.
 add_to PATH $HOME/.local/bin $HOME/.local/scripts $GOPATH/bin $HOME/.cargo/bin
-export LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH"
+add_to LD_LIBRARY_PATH $HOME/.local/lib

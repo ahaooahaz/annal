@@ -4,6 +4,7 @@ case $- in
       *) return;;
 esac
 
+[[ -o login ]] || exec zsh -l
 CURRSHELL=$(< /proc/$$/comm)
 
 #=====================#
@@ -247,7 +248,48 @@ alias grep='grep --color=auto'
 alias watch='watch ' # enable alias commands
 alias sudo='sudo ' # enable alias commands
 # cale min max mean.
-alias mmm='awk '\''BEGIN{max=-1e10;min=1e10;sum=0;n=0} {sum+=$1;n+=1;if($1>max)max=$1;if($1<min)min=$1} END{print "Max:", max, "Min:", min, "Mean:", (n>2)?(sum-min-max)/(n-2):sum/n}'\'''
+alias mmm='awk '\''
+BEGIN{max=-1e10;min=1e10;sum=0;n=0}
+{sum+=$1;n+=1;if($1>max)max=$1;if($1<min)min=$1}
+END{print "Max:", max, "Min:", min, "Mean:", (n>2)?(sum-min-max)/(n-2):sum/n}'\'
+
+# android.
+alias adb_get_cpu_freq='adb shell '\''
+cpu_count=`cat /sys/devices/system/cpu/present`
+cpu_count=${cpu_count//"0-"/}
+cpu_count=$((cpu_count + 1))
+for i in $(seq 0 $((cpu_count - 1)))
+do
+    scaling_governor=$(cat /sys/devices/system/cpu/cpu$i/cpufreq/scaling_governor)
+    cpuinfo_cur_freq=$(cat /sys/devices/system/cpu/cpu$i/cpufreq/cpuinfo_cur_freq)
+    cpuinfo_max_freq=$(cat /sys/devices/system/cpu/cpu$i/cpufreq/cpuinfo_max_freq)
+    cpuinfo_min_freq=$(cat /sys/devices/system/cpu/cpu$i/cpufreq/cpuinfo_min_freq)
+    scaling_cur_freq=$(cat /sys/devices/system/cpu/cpu$i/cpufreq/scaling_cur_freq)
+    scaling_min_freq=$(cat /sys/devices/system/cpu/cpu$i/cpufreq/scaling_min_freq)
+    scaling_max_freq=$(cat /sys/devices/system/cpu/cpu$i/cpufreq/scaling_max_freq)
+    echo "cpu[$i]: \
+l($scaling_governor) \
+cpuinfo/scaling: cur_freq($cpuinfo_cur_freq/$scaling_cur_freq) \
+min_freq($cpuinfo_min_freq/$scaling_min_freq) \
+max_freq($cpuinfo_max_freq/$scaling_max_freq) \
+"
+done
+echo "cpu_count: ${cpu_count}"
+'\'
+
+alias adb_performance_cpu_freq='adb shell '\''
+cpu_count=`cat /sys/devices/system/cpu/present`
+cpu_count=${cpu_count//"0-"/}
+cpu_count=$((cpu_count + 1))
+for i in $(seq 0 $((cpu_count - 1)))
+do
+    cpuinfo_cur_freq=$(cat /sys/devices/system/cpu/cpu$i/cpufreq/cpuinfo_cur_freq)
+    cpuinfo_max_freq=$(cat /sys/devices/system/cpu/cpu$i/cpufreq/cpuinfo_max_freq)
+    echo performance > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_governor
+    echo $cpuinfo_max_freq > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_min_freq
+    echo $cpuinfo_max_freq > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_max_freq
+done
+'\'' && adb_get_cpu_freq'
 
 # completion.
 apps=(kubectl helm)
