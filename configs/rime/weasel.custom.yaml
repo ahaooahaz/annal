@@ -9,7 +9,8 @@ patch:
   show_notifications:  false
   style:
     color_scheme: gruvbox
-    font_face: "JetBrainsMono Nerd Font"
+    # 修改字体其他字体导致在windows主页搜索框输入中文时卡顿
+    font_face: "Microsoft YaHei"
     font_point: 13
     horizontal: false
     inline_preedit: false
