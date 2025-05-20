@@ -28,13 +28,3 @@ source ($nu.default-config-dir | path join 'custom.nu')
 # ----------------------------------------
 
 use scripts *
-
-
-# ----------------------------------------
-# aliases
-# ----------------------------------------
-
-alias vim = nvim
-alias vi = nvim
-alias grep = grep --color=auto
-alias cat = open --raw
