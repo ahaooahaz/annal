@@ -6,7 +6,7 @@
             "links": [
                 {
                     "dst": "plugins/zcomet",
-                    "link": "~/.zcomet/bin"
+                    "link": "~/.zcomet"
                 }
             ],
             "actions": [
