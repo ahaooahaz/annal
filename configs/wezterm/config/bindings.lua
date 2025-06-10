@@ -14,8 +14,8 @@ end
 
 local keys = {
     -- misc/useful --
-    { key = "F1", mods = "NONE", action = "ActivateCopyMode" },
-    { key = "F2", mods = "NONE", action = act.ActivateCommandPalette },
+    { key = "F1", mods = mod.SUPER, action = "ActivateCopyMode" },
+    { key = "F2", mods = mod.SUPER, action = act.ActivateCommandPalette },
     { key = "F3", mods = "NONE", action = act.ShowLauncher },
     { key = "F4", mods = "NONE", action = act.ShowTabNavigator },
     { key = "F11", mods = "NONE", action = act.ToggleFullScreen },
@@ -81,6 +81,9 @@ local keys = {
     { key = "UpArrow", mods = mod.SUPER, action = act.IncreaseFontSize },
     { key = "DownArrow", mods = mod.SUPER, action = act.DecreaseFontSize },
     { key = "r", mods = mod.SUPER, action = act.ResetFontSize },
+
+    { key = "LeftArrow", mods = "CTRL", action = wezterm.action.SendString("\x1b[1;5D") },
+    { key = "RightArrow", mods = "CTRL", action = wezterm.action.SendString("\x1b[1;5C") },
 
     -- key-tables --
     -- resizes fonts
