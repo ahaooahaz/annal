@@ -4,8 +4,8 @@ case $- in
       *) return;;
 esac
 
-[[ -o login ]] || exec zsh -l
 CURRSHELL=$(< /proc/$$/comm)
+[[ -o login ]] || exec ${CURRSHELL} -l
 
 #=====================#
 # Directory Shortcuts #
