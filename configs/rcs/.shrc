@@ -4,8 +4,8 @@ case $- in
       *) return;;
 esac
 
-[[ -o login ]] || exec zsh -l
 CURRSHELL=$(< /proc/$$/comm)
+[[ -o login ]] || exec ${CURRSHELL} -l
 
 #=====================#
 # Directory Shortcuts #
@@ -45,6 +45,8 @@ bindkey '^Y'   redo                # [Ctrl-Y]
 bindkey ' '    magic-space         # [Space]     Trigger history expansion
 bindkey '^[^M' self-insert-unmeta  # [Alt-Enter] Insert newline
 bindkey '^R' history-incremental-search-backward  # [Ctrl-R] history search
+bindkey "^[[1;5C" forward-word   # Ctrl + →
+bindkey "^[[1;5D" backward-word  # Ctrl + ←
 
 #=========#
 # Plugins #
