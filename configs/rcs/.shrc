@@ -5,7 +5,13 @@ case $- in
 esac
 
 CURRSHELL=$(< /proc/$$/comm)
-[[ -o login ]] || exec ${CURRSHELL} -l
+if [[ "${CURRSHELL}" == "zsh" ]]; then
+    [[ -o login ]] || exec ${CURRSHELL} -l
+elif [[ "${CURRSHELL}" == "bash" ]]; then
+    if ! shopt -q login_shell; then
+        exec ${CURRSHELL} -l
+    fi
+fi
 
 #=====================#
 # Directory Shortcuts #
@@ -25,204 +31,207 @@ export MANROFFOPT='-c'
 
 if [[ "${CURRSHELL}" == "zsh" ]]; then
 #=====================#
-# P10k Instant Prompt #
+#     Zsh config      #
 #=====================#
-include -f "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 
-###############
-# Key Binding #
-###############
-bindkey -v
-bindkey -r '^['  # Unbind [Esc]    (default: vi-cmd-mode)
-bindkey '^A'   beginning-of-line   # [Ctrl-A]
-bindkey '^B'   vi-backward-blank-word       # [Ctrl-B]
-bindkey '^N'   vi-forward-blank-word-end        # [Ctrl-N]
-bindkey '^E'   end-of-line         # [Ctrl-E]
-bindkey "^D"   delete-char         # [Ctrl-D]
-bindkey "^K"   kill-line           # [Ctrl-K]
-bindkey '^Z'   undo                # [Ctrl-Z]
-bindkey '^Y'   redo                # [Ctrl-Y]
-bindkey ' '    magic-space         # [Space]     Trigger history expansion
-bindkey '^[^M' self-insert-unmeta  # [Alt-Enter] Insert newline
-bindkey '^R' history-incremental-search-backward  # [Ctrl-R] history search
-bindkey "^[[1;5C" forward-word   # Ctrl + →
-bindkey "^[[1;5D" backward-word  # Ctrl + ←
+    # P10k Instant Prompt
+    include -f "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 
-#=========#
-# Plugins #
-#=========#
-include -f "${HOME}/.zcomet/zcomet.zsh"
+    # Key Binding
+    bindkey -v
+    bindkey -r '^['  # Unbind [Esc]    (default: vi-cmd-mode)
+    bindkey '^A'   beginning-of-line   # [Ctrl-A]
+    bindkey '^B'   vi-backward-blank-word       # [Ctrl-B]
+    bindkey '^N'   vi-forward-blank-word-end        # [Ctrl-N]
+    bindkey '^E'   end-of-line         # [Ctrl-E]
+    bindkey "^D"   delete-char         # [Ctrl-D]
+    bindkey "^K"   kill-line           # [Ctrl-K]
+    bindkey '^Z'   undo                # [Ctrl-Z]
+    bindkey '^Y'   redo                # [Ctrl-Y]
+    bindkey ' '    magic-space         # [Space]     Trigger history expansion
+    bindkey '^[^M' self-insert-unmeta  # [Alt-Enter] Insert newline
+    bindkey '^R' history-incremental-search-backward  # [Ctrl-R] history search
+    bindkey "^[[1;5C" forward-word   # Ctrl + →
+    bindkey "^[[1;5D" backward-word  # Ctrl + ←
 
-zcomet load ohmyzsh lib {completion,clipboard}.zsh
-zcomet load ohmyzsh plugins/autojump
-zcomet load ohmyzsh plugins/history
-zcomet load ohmyzsh plugins/history-substring-search
-zcomet load ohmyzsh plugins/git
-zcomet load tj/git-extras etc git-extras-completion.zsh
-zcomet load hlissner/zsh-autopair
+    # Plugins
+    include -f "${HOME}/.zcomet/zcomet.zsh"
 
-zcomet compinit
+    zcomet load ohmyzsh lib {completion,clipboard}.zsh
+    zcomet load ohmyzsh plugins/autojump
+    zcomet load ohmyzsh plugins/history
+    zcomet load ohmyzsh plugins/history-substring-search
+    zcomet load ohmyzsh plugins/git
+    zcomet load tj/git-extras etc git-extras-completion.zsh
+    zcomet load hlissner/zsh-autopair
 
-zcomet load Aloxaf/fzf-tab
-#zstyle ':fzf-tab:*' fzf-bindings 'tab:accept'
-zstyle ':fzf-tab:*' fzf-bindings-default 'tab:down,btab:up,change:top,ctrl-space:toggle,bspace:backward-delete-char,ctrl-h:backward-delete-char'
-zstyle ':fzf-tab:complete:kill:argument-rest' fzf-preview 'ps --pid=$word -o cmd --no-headers -w -w'
-zstyle ':fzf-tab:complete:kill:argument-rest' fzf-flags '--preview-window=down:3:wrap'
-zstyle ':fzf-tab:complete:kill:*' popup-pad 0 3
+    zcomet compinit
 
-# zcomet load zsh-users/zsh-autosuggestions
-# zcomet load zsh-users/zsh-syntax-highlighting
-zcomet load zdharma-continuum/fast-syntax-highlighting
+    zcomet load Aloxaf/fzf-tab
+    #zstyle ':fzf-tab:*' fzf-bindings 'tab:accept'
+    zstyle ':fzf-tab:*' fzf-bindings-default 'tab:down,btab:up,change:top,ctrl-space:toggle,bspace:backward-delete-char,ctrl-h:backward-delete-char'
+    zstyle ':fzf-tab:complete:kill:argument-rest' fzf-preview 'ps --pid=$word -o cmd --no-headers -w -w'
+    zstyle ':fzf-tab:complete:kill:argument-rest' fzf-flags '--preview-window=down:3:wrap'
+    zstyle ':fzf-tab:complete:kill:*' popup-pad 0 3
 
-zcomet load romkatv/powerlevel10k
-zcomet load trapd00r/LS_COLORS
+    # zcomet load zsh-users/zsh-autosuggestions
+    # zcomet load zsh-users/zsh-syntax-highlighting
+    zcomet load zdharma-continuum/fast-syntax-highlighting
 
-#=========#
-# Configs #
-#=========#
-# zsh misc
-setopt auto_cd               # simply type dir name to `cd`
-setopt auto_pushd            # make `cd` behave like pushd
-setopt pushd_ignore_dups     # don't pushd duplicates
-setopt pushd_minus           # exchange the meanings of `+` and `-` in pushd
-setopt ksh_option_print      # make `setopt` output all options
-setopt extended_glob         # extended globbing
+    zcomet load romkatv/powerlevel10k
+    zcomet load trapd00r/LS_COLORS
 
-# time (zsh built-in)
-TIMEFMT="\
-%J   %U  user %S system %P cpu %*E total
-avg shared (code):         %X KB
-avg unshared (data/stack): %D KB
-total (sum):               %K KB
-max memory:                %M MB
-page faults from disk:     %F
-other page faults:         %R"
+    # Configs
+    # zsh misc
+    setopt auto_cd               # simply type dir name to `cd`
+    setopt auto_pushd            # make `cd` behave like pushd
+    setopt pushd_ignore_dups     # don't pushd duplicates
+    setopt pushd_minus           # exchange the meanings of `+` and `-` in pushd
+    setopt ksh_option_print      # make `setopt` output all options
+    setopt extended_glob         # extended globbing
 
-# zsh history
-setopt hist_ignore_all_dups  # no duplicates
-setopt hist_save_no_dups     # don't save duplicates
-setopt hist_ignore_space     # no commands starting with space
-setopt hist_reduce_blanks    # remove all unneccesary spaces
-setopt share_history         # share history between sessions
-HISTFILE=~/.zsh_history
-HISTSIZE=1000000  # number of commands that are loaded
-SAVEHIST=1000000  # number of commands that are stored
+    # time (zsh built-in)
+    TIMEFMT="\
+    %J   %U  user %S system %P cpu %*E total
+    avg shared (code):         %X KB
+    avg unshared (data/stack): %D KB
+    total (sum):               %K KB
+    max memory:                %M MB
+    page faults from disk:     %F
+    other page faults:         %R"
 
-autoload -Uz colors && colors  # provide color variables (see `which colors`)
+    # zsh history
+    setopt hist_ignore_all_dups  # no duplicates
+    setopt hist_save_no_dups     # don't save duplicates
+    setopt hist_ignore_space     # no commands starting with space
+    setopt hist_reduce_blanks    # remove all unneccesary spaces
+    setopt share_history         # share history between sessions
+    HISTFILE=~/.zsh_history
+    HISTSIZE=1000000  # number of commands that are loaded
+    SAVEHIST=1000000  # number of commands that are stored
 
-# fix echo <fe0f> chars when rime input a emoji
-# Ref: https://github.com/rime/rime-emoji/issues/8
-setopt COMBINING_CHARS
+    autoload -Uz colors && colors  # provide color variables (see `which colors`)
 
-include -f "${ZDOTDIR:-${HOME}}/.p10k.zsh"
+    # fix echo <fe0f> chars when rime input a emoji
+    # Ref: https://github.com/rime/rime-emoji/issues/8
+    setopt COMBINING_CHARS
+
+    include -f "${ZDOTDIR:-${HOME}}/.p10k.zsh"
+
+#=====================#
+#   Zsh config end    #
+#=====================#
 elif [[ "${CURRSHELL}" == "bash" ]]; then
-# don't put duplicate lines or lines starting with space in the history.
-# See bash(1) for more options
-HISTCONTROL=ignoreboth
+#=====================#
+#     Bash config     #
+#=====================#
+    # don't put duplicate lines or lines starting with space in the history.
+    # See bash(1) for more options
+    HISTCONTROL=ignoreboth
 
-# append to the history file, don't overwrite it
-shopt -s histappend
+    # append to the history file, don't overwrite it
+    shopt -s histappend
 
-# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
-HISTSIZE=1000000
-HISTFILESIZE=1000000
+    # for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+    HISTSIZE=1000000
+    HISTFILESIZE=1000000
 
-# check the window size after each command and, if necessary,
-# update the values of LINES and COLUMNS.
-shopt -s checkwinsize
+    # check the window size after each command and, if necessary,
+    # update the values of LINES and COLUMNS.
+    shopt -s checkwinsize
 
-# If set, the pattern "**" used in a pathname expansion context will
-# match all files and zero or more directories and subdirectories.
-#shopt -s globstar
+    # If set, the pattern "**" used in a pathname expansion context will
+    # match all files and zero or more directories and subdirectories.
+    #shopt -s globstar
 
-# make less more friendly for non-text input files, see lesspipe(1)
-[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+    # make less more friendly for non-text input files, see lesspipe(1)
+    [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
 
-# set variable identifying the chroot you work in (used in the prompt below)
-if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
-    debian_chroot=$(cat /etc/debian_chroot)
-fi
+    # set variable identifying the chroot you work in (used in the prompt below)
+    if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+        debian_chroot=$(cat /etc/debian_chroot)
+    fi
 
-# set a fancy prompt (non-color, unless we know we "want" color)
-case "$TERM" in
-    xterm-color|*-256color) color_prompt=yes;;
-esac
+    # set a fancy prompt (non-color, unless we know we "want" color)
+    case "$TERM" in
+        xterm-color|*-256color) color_prompt=yes;;
+    esac
 
-# uncomment for a colored prompt, if the terminal has the capability; turned
-# off by default to not distract the user: the focus in a terminal window
-# should be on the output of commands, not on the prompt
-#force_color_prompt=yes
+    # uncomment for a colored prompt, if the terminal has the capability; turned
+    # off by default to not distract the user: the focus in a terminal window
+    # should be on the output of commands, not on the prompt
+    #force_color_prompt=yes
 
-if [ -n "$force_color_prompt" ]; then
-    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-	# We have color support; assume it's compliant with Ecma-48
-	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-	# a case would tend to support setf rather than setaf.)
-	color_prompt=yes
+    if [ -n "$force_color_prompt" ]; then
+        if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+    	# We have color support; assume it's compliant with Ecma-48
+    	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+    	# a case would tend to support setf rather than setaf.)
+    	color_prompt=yes
+        else
+    	color_prompt=
+        fi
+    fi
+
+    if [ "$color_prompt" = yes ]; then
+        PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
     else
-	color_prompt=
+        PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
     fi
-fi
+    unset color_prompt force_color_prompt
 
-if [ "$color_prompt" = yes ]; then
-    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
-else
-    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
-fi
-unset color_prompt force_color_prompt
+    # If this is an xterm set the title to user@host:dir
+    case "$TERM" in
+    xterm*|rxvt*)
+        PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+        ;;
+    *)
+        ;;
+    esac
 
-# If this is an xterm set the title to user@host:dir
-case "$TERM" in
-xterm*|rxvt*)
-    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
-    ;;
-*)
-    ;;
-esac
+    # enable color support of ls and also add handy aliases
+    if [ -x /usr/bin/dircolors ]; then
+        test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+        alias ls='ls --color=auto'
+        #alias dir='dir --color=auto'
+        #alias vdir='vdir --color=auto'
 
-# enable color support of ls and also add handy aliases
-if [ -x /usr/bin/dircolors ]; then
-    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-    alias ls='ls --color=auto'
-    #alias dir='dir --color=auto'
-    #alias vdir='vdir --color=auto'
-
-    alias grep='grep --color=auto'
-    alias fgrep='fgrep --color=auto'
-    alias egrep='egrep --color=auto'
-fi
-
-# colored GCC warnings and errors
-#export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
-
-# some more ls aliases
-alias ll='ls -alF'
-alias la='ls -A'
-alias l='ls -CF'
-
-# Add an "alert" alias for long running commands.  Use like so:
-#   sleep 10; alert
-alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
-
-# Alias definitions.
-# You may want to put all your additions into a separate file like
-# ~/.bash_aliases, instead of adding them here directly.
-# See /usr/share/doc/bash-doc/examples in the bash-doc package.
-
-if [ -f ~/.bash_aliases ]; then
-    . ~/.bash_aliases
-fi
-
-# enable programmable completion features (you don't need to enable
-# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
-# sources /etc/bash.bashrc).
-if ! shopt -oq posix; then
-    if [ -f /usr/share/bash-completion/bash_completion ]; then
-        . /usr/share/bash-completion/bash_completion
-    elif [ -f /etc/bash_completion ]; then
-        . /etc/bash_completion
+        alias grep='grep --color=auto'
+        alias fgrep='fgrep --color=auto'
+        alias egrep='egrep --color=auto'
     fi
-fi
+
+    # colored GCC warnings and errors
+    #export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+
+    # some more ls aliases
+    alias ll='ls -alF'
+    alias la='ls -A'
+    alias l='ls -CF'
+
+    # Add an "alert" alias for long running commands.  Use like so:
+    #   sleep 10; alert
+    alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
+
+    # Alias definitions.
+    # You may want to put all your additions into a separate file like
+    # ~/.bash_aliases, instead of adding them here directly.
+    # See /usr/share/doc/bash-doc/examples in the bash-doc package.
+
+    if [ -f ~/.bash_aliases ]; then
+        . ~/.bash_aliases
+    fi
+
+    # enable programmable completion features (you don't need to enable
+    # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+    # sources /etc/bash.bashrc).
+    if ! shopt -oq posix; then
+        if [ -f /usr/share/bash-completion/bash_completion ]; then
+            . /usr/share/bash-completion/bash_completion
+        elif [ -f /etc/bash_completion ]; then
+            . /etc/bash_completion
+        fi
+    fi
 fi
 
 
@@ -307,4 +316,3 @@ for app in ${apps}; do
         source <(${app} --completion ${CURRSHELL})
     fi
 done
-

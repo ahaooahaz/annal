@@ -145,13 +145,12 @@ if [[ -s "$HOME/.gvm/scripts/gvm" ]]; then
     set -a
     function gouse() {
         gvm use $1 --default
-        export GOPATH=$ZGOPATH
     }
     set +a
 else
+    export GOPATH=$ZGOPATH
     add_to PATH $HOME/.local/go/bin
 fi
-export GOPATH=$ZGOPATH
 
 # Lua env.
 export LUA_LOCAL_PATH=$HOME/.luarocks
