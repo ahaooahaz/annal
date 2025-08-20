@@ -28,6 +28,9 @@ export BAT_THEME='OneHalfDark'
 # man
 export MANPAGER='sh -c "col -bx | bat -pl man --theme=Monokai\ Extended"'
 export MANROFFOPT='-c'
+export HISTFILE=~/.${CURRSHELL}_history
+export HISTSIZE=1000000  # number of commands that are loaded
+export SAVEHIST=1000000  # number of commands that are stored
 
 if [[ "${CURRSHELL}" == "zsh" ]]; then
 #=====================#
@@ -106,9 +109,6 @@ if [[ "${CURRSHELL}" == "zsh" ]]; then
     setopt hist_ignore_space     # no commands starting with space
     setopt hist_reduce_blanks    # remove all unneccesary spaces
     setopt share_history         # share history between sessions
-    HISTFILE=~/.zsh_history
-    HISTSIZE=1000000  # number of commands that are loaded
-    SAVEHIST=1000000  # number of commands that are stored
 
     autoload -Uz colors && colors  # provide color variables (see `which colors`)
 
@@ -131,10 +131,6 @@ elif [[ "${CURRSHELL}" == "bash" ]]; then
 
     # append to the history file, don't overwrite it
     shopt -s histappend
-
-    # for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
-    HISTSIZE=1000000
-    HISTFILESIZE=1000000
 
     # check the window size after each command and, if necessary,
     # update the values of LINES and COLUMNS.
@@ -164,12 +160,12 @@ elif [[ "${CURRSHELL}" == "bash" ]]; then
 
     if [ -n "$force_color_prompt" ]; then
         if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-    	# We have color support; assume it's compliant with Ecma-48
-    	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-    	# a case would tend to support setf rather than setaf.)
-    	color_prompt=yes
+        # We have color support; assume it's compliant with Ecma-48
+        # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+        # a case would tend to support setf rather than setaf.)
+        color_prompt=yes
         else
-    	color_prompt=
+        color_prompt=
         fi
     fi
 
@@ -189,39 +185,6 @@ elif [[ "${CURRSHELL}" == "bash" ]]; then
         ;;
     esac
 
-    # enable color support of ls and also add handy aliases
-    if [ -x /usr/bin/dircolors ]; then
-        test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-        alias ls='ls --color=auto'
-        #alias dir='dir --color=auto'
-        #alias vdir='vdir --color=auto'
-
-        alias grep='grep --color=auto'
-        alias fgrep='fgrep --color=auto'
-        alias egrep='egrep --color=auto'
-    fi
-
-    # colored GCC warnings and errors
-    #export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
-
-    # some more ls aliases
-    alias ll='ls -alF'
-    alias la='ls -A'
-    alias l='ls -CF'
-
-    # Add an "alert" alias for long running commands.  Use like so:
-    #   sleep 10; alert
-    alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
-
-    # Alias definitions.
-    # You may want to put all your additions into a separate file like
-    # ~/.bash_aliases, instead of adding them here directly.
-    # See /usr/share/doc/bash-doc/examples in the bash-doc package.
-
-    if [ -f ~/.bash_aliases ]; then
-        . ~/.bash_aliases
-    fi
-
     # enable programmable completion features (you don't need to enable
     # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
     # sources /etc/bash.bashrc).
@@ -239,8 +202,15 @@ fi
 # Alias #
 #########
 
-alias l='exa -lh --group-directories-first --git --time-style=long-iso'
+alias l='ls -CF'
+alias ll='ls -alF'
+alias la='ls -A'
 alias ls='ls --color=auto'
+alias lexa='exa -lh --group-directories-first --git --time-style=long-iso'
+
+alias grep='grep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
 
 alias v=nvim
 alias vi=nvim
@@ -263,44 +233,6 @@ alias mmm='awk '\''
 BEGIN{max=-1e10;min=1e10;sum=0;n=0}
 {sum+=$1;n+=1;if($1>max)max=$1;if($1<min)min=$1}
 END{print "Max:", max, "Min:", min, "Mean:", (n>2)?(sum-min-max)/(n-2):sum/n}'\'
-
-# android.
-alias adb_get_cpu_freq='adb shell '\''
-cpu_count=`cat /sys/devices/system/cpu/present`
-cpu_count=${cpu_count//"0-"/}
-cpu_count=$((cpu_count + 1))
-for i in $(seq 0 $((cpu_count - 1)))
-do
-    scaling_governor=$(cat /sys/devices/system/cpu/cpu$i/cpufreq/scaling_governor)
-    cpuinfo_cur_freq=$(cat /sys/devices/system/cpu/cpu$i/cpufreq/cpuinfo_cur_freq)
-    cpuinfo_max_freq=$(cat /sys/devices/system/cpu/cpu$i/cpufreq/cpuinfo_max_freq)
-    cpuinfo_min_freq=$(cat /sys/devices/system/cpu/cpu$i/cpufreq/cpuinfo_min_freq)
-    scaling_cur_freq=$(cat /sys/devices/system/cpu/cpu$i/cpufreq/scaling_cur_freq)
-    scaling_min_freq=$(cat /sys/devices/system/cpu/cpu$i/cpufreq/scaling_min_freq)
-    scaling_max_freq=$(cat /sys/devices/system/cpu/cpu$i/cpufreq/scaling_max_freq)
-    echo "cpu[$i]: \
-l($scaling_governor) \
-cpuinfo/scaling: cur_freq($cpuinfo_cur_freq/$scaling_cur_freq) \
-min_freq($cpuinfo_min_freq/$scaling_min_freq) \
-max_freq($cpuinfo_max_freq/$scaling_max_freq) \
-"
-done
-echo "cpu_count: ${cpu_count}"
-'\'
-
-alias adb_performance_cpu_freq='adb shell '\''
-cpu_count=`cat /sys/devices/system/cpu/present`
-cpu_count=${cpu_count//"0-"/}
-cpu_count=$((cpu_count + 1))
-for i in $(seq 0 $((cpu_count - 1)))
-do
-    cpuinfo_cur_freq=$(cat /sys/devices/system/cpu/cpu$i/cpufreq/cpuinfo_cur_freq)
-    cpuinfo_max_freq=$(cat /sys/devices/system/cpu/cpu$i/cpufreq/cpuinfo_max_freq)
-    echo performance > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_governor
-    echo $cpuinfo_max_freq > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_min_freq
-    echo $cpuinfo_max_freq > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_max_freq
-done
-'\'' && adb_get_cpu_freq'
 
 # completion.
 apps=(kubectl helm)
