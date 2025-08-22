@@ -1,11 +1,12 @@
 local wezterm = require("wezterm")
+local fonts = require("config.fonts")
 
 return {
     term = "xterm-256color",
     animation_fps = 60,
     max_fps = 60,
     front_end = "Software",
-    -- webgpu_power_preference = "HighPerformance",
+    webgpu_power_preference = "HighPerformance",
 
     -- color scheme
     -- colors = colors,
@@ -70,8 +71,8 @@ return {
     window_frame = {
         active_titlebar_bg = "#0F2536",
         inactive_titlebar_bg = "#0F2536",
-        -- font = fonts.font,
-        -- font_size = fonts.font_size,
+        font = fonts.font,
+        font_size = fonts.font_size - 1,
     },
-    inactive_pane_hsb = { saturation = 1.0, brightness = 1.0 },
+    inactive_pane_hsb = { saturation = 0.5, brightness = 0.5 },
 }

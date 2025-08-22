@@ -52,9 +52,9 @@ M.set_battery = function()
         charge = string.format("%.0f%%", b.state_of_charge * 100)
 
         if b.state == "Charging" then
-        icon = charging_icons[idx]
+            icon = charging_icons[idx]
         else
-        icon = discharging_icons[idx]
+            icon = discharging_icons[idx]
         end
     end
 

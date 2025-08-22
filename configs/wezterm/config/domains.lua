@@ -8,11 +8,11 @@ return {
     -- ref: https://wezfurlong.org/wezterm/config/lua/WslDomain.html
     wsl_domains = {
         {
-        name = "WSL:Ubuntu-24.04",
-        distribution = "Ubuntu-24.04",
-        username = "ahaooahaz",
-        default_cwd = "/home/ahaooahaz",
-        -- default_prog = { "zsh" },
+            name = "WSL:Ubuntu-24.04",
+            distribution = "Ubuntu-24.04",
+            username = "ahaooahaz",
+            default_cwd = "/home/ahaooahaz",
+            -- default_prog = { "zsh" },
         },
     },
 }

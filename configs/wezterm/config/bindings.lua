@@ -14,33 +14,39 @@ end
 
 local keys = {
     -- misc/useful --
-    { key = "F1", mods = mod.SUPER, action = "ActivateCopyMode" },
-    { key = "F2", mods = mod.SUPER, action = act.ActivateCommandPalette },
-    { key = "F3", mods = "NONE", action = act.ShowLauncher },
-    { key = "F4", mods = "NONE", action = act.ShowTabNavigator },
-    { key = "F11", mods = "NONE", action = act.ToggleFullScreen },
-    { key = "F12", mods = "NONE", action = act.ShowDebugOverlay },
-    { key = "f", mods = mod.SUPER, action = act.Search({ CaseInSensitiveString = "" }) },
+    { key = "F1",        mods = mod.SUPER,     action = "ActivateCopyMode" },
+    { key = "F2",        mods = mod.SUPER,     action = act.ActivateCommandPalette },
+    { key = "F3",        mods = "NONE",        action = act.ShowLauncher },
+    { key = "F4",        mods = "NONE",        action = act.ShowTabNavigator },
+    { key = "F11",       mods = "NONE",        action = act.ToggleFullScreen },
+    { key = "F12",       mods = "NONE",        action = act.ShowDebugOverlay },
+    { key = "f",         mods = mod.SUPER,     action = act.Search({ CaseInSensitiveString = "" }) },
+
+    -- scroll --
+    { key = "UpArrow",   mods = "CTRL|SHIFT",  action = wezterm.action.ScrollByLine(-1) },
+    { key = "DownArrow", mods = "CTRL|SHIFT",  action = wezterm.action.ScrollByLine(1) },
+    { key = "PageUp",    mods = "NONE",        action = wezterm.action.ScrollByPage(-1) },
+    { key = "PageDown",  mods = "NONE",        action = wezterm.action.ScrollByPage(1) },
 
     -- copy/paste --
-    { key = "c", mods = "CTRL|SHIFT", action = act.CopyTo("Clipboard") },
-    { key = "v", mods = "CTRL|SHIFT", action = act.PasteFrom("Clipboard") },
+    { key = "c",         mods = "CTRL|SHIFT",  action = act.CopyTo("Clipboard") },
+    { key = "v",         mods = "CTRL|SHIFT",  action = act.PasteFrom("Clipboard") },
 
     -- tabs --
     -- tabs: spawn+close
-    { key = "t", mods = mod.SUPER, action = act.SpawnTab("DefaultDomain") },
-    { key = "t", mods = mod.SUPER_REV, action = act.SpawnTab({ DomainName = "WSL:Ubuntu-24.04" }) },
-    { key = "w", mods = mod.SUPER_REV, action = act.CloseCurrentTab({ confirm = false }) },
+    { key = "t",         mods = mod.SUPER,     action = act.SpawnTab("DefaultDomain") },
+    { key = "t",         mods = mod.SUPER_REV, action = act.SpawnTab({ DomainName = "WSL:Ubuntu-24.04" }) },
+    { key = "w",         mods = mod.SUPER_REV, action = act.CloseCurrentTab({ confirm = false }) },
 
     -- tabs: navigation
-    { key = "[", mods = mod.SUPER, action = act.ActivateTabRelative(-1) },
-    { key = "]", mods = mod.SUPER, action = act.ActivateTabRelative(1) },
-    { key = "[", mods = mod.SUPER_REV, action = act.MoveTabRelative(-1) },
-    { key = "]", mods = mod.SUPER_REV, action = act.MoveTabRelative(1) },
+    { key = "[",         mods = mod.SUPER,     action = act.ActivateTabRelative(-1) },
+    { key = "]",         mods = mod.SUPER,     action = act.ActivateTabRelative(1) },
+    { key = "[",         mods = mod.SUPER_REV, action = act.MoveTabRelative(-1) },
+    { key = "]",         mods = mod.SUPER_REV, action = act.MoveTabRelative(1) },
 
     -- window --
     -- spawn windows
-    { key = "n", mods = mod.SUPER, action = act.SpawnWindow },
+    { key = "n",         mods = mod.SUPER,     action = act.SpawnWindow },
 
     -- panes --
     -- panes: split panes
@@ -61,29 +67,29 @@ local keys = {
     },
 
     -- panes: zoom+close pane
-    { key = "z", mods = mod.SUPER, action = act.TogglePaneZoomState },
-    { key = "w", mods = mod.SUPER, action = act.CloseCurrentPane({ confirm = false }) },
+    { key = "z",          mods = mod.SUPER, action = act.TogglePaneZoomState },
+    { key = "w",          mods = mod.SUPER, action = act.CloseCurrentPane({ confirm = false }) },
 
     -- panes: navigation
-    { key = "k", mods = mod.SUPER, action = act.ActivatePaneDirection("Up") },
-    { key = "j", mods = mod.SUPER, action = act.ActivatePaneDirection("Down") },
-    { key = "h", mods = mod.SUPER, action = act.ActivatePaneDirection("Left") },
-    { key = "l", mods = mod.SUPER, action = act.ActivatePaneDirection("Right") },
+    { key = "k",          mods = mod.SUPER, action = act.ActivatePaneDirection("Up") },
+    { key = "j",          mods = mod.SUPER, action = act.ActivatePaneDirection("Down") },
+    { key = "h",          mods = mod.SUPER, action = act.ActivatePaneDirection("Left") },
+    { key = "l",          mods = mod.SUPER, action = act.ActivatePaneDirection("Right") },
 
     -- panes: resize
-    { key = "UpArrow", mods = mod.SUPER, action = act.AdjustPaneSize({ "Up", 1 }) },
-    { key = "DownArrow", mods = mod.SUPER, action = act.AdjustPaneSize({ "Down", 1 }) },
-    { key = "LeftArrow", mods = mod.SUPER, action = act.AdjustPaneSize({ "Left", 1 }) },
+    { key = "UpArrow",    mods = mod.SUPER, action = act.AdjustPaneSize({ "Up", 1 }) },
+    { key = "DownArrow",  mods = mod.SUPER, action = act.AdjustPaneSize({ "Down", 1 }) },
+    { key = "LeftArrow",  mods = mod.SUPER, action = act.AdjustPaneSize({ "Left", 1 }) },
     { key = "RightArrow", mods = mod.SUPER, action = act.AdjustPaneSize({ "Right", 1 }) },
 
     -- fonts --
     -- fonts: resize
-    { key = "UpArrow", mods = mod.SUPER, action = act.IncreaseFontSize },
-    { key = "DownArrow", mods = mod.SUPER, action = act.DecreaseFontSize },
-    { key = "r", mods = mod.SUPER, action = act.ResetFontSize },
+    { key = "UpArrow",    mods = mod.SUPER, action = act.IncreaseFontSize },
+    { key = "DownArrow",  mods = mod.SUPER, action = act.DecreaseFontSize },
+    { key = "r",          mods = mod.SUPER, action = act.ResetFontSize },
 
-    { key = "LeftArrow", mods = "CTRL", action = wezterm.action.SendString("\x1b[1;5D") },
-    { key = "RightArrow", mods = "CTRL", action = wezterm.action.SendString("\x1b[1;5C") },
+    { key = "LeftArrow",  mods = "CTRL",    action = wezterm.action.SendString("\x1b[1;5D") },
+    { key = "RightArrow", mods = "CTRL",    action = wezterm.action.SendString("\x1b[1;5C") },
 
     -- key-tables --
     -- resizes fonts
@@ -91,9 +97,9 @@ local keys = {
         key = "f",
         mods = "LEADER",
         action = act.ActivateKeyTable({
-        name = "resize_font",
-        one_shot = false,
-        timemout_miliseconds = 1000,
+            name = "resize_font",
+            one_shot = false,
+            timemout_miliseconds = 1000,
         }),
     },
     -- resize panes
@@ -101,9 +107,9 @@ local keys = {
         key = "p",
         mods = "LEADER",
         action = act.ActivateKeyTable({
-        name = "resize_pane",
-        one_shot = false,
-        timemout_miliseconds = 1000,
+            name = "resize_pane",
+            one_shot = false,
+            timemout_miliseconds = 1000,
         }),
     },
     -- rename tab bar
@@ -111,34 +117,34 @@ local keys = {
         key = "R",
         mods = "CTRL|SHIFT",
         action = act.PromptInputLine({
-        description = "Enter new name for tab",
-        action = wezterm.action_callback(function(window, pane, line)
-            -- line will be `nil` if they hit escape without entering anything
-            -- An empty string if they just hit enter
-            -- Or the actual line of text they wrote
-            if line then
-            window:active_tab():set_title(line)
-            end
-        end),
+            description = "Enter new name for tab",
+            action = wezterm.action_callback(function(window, pane, line)
+                -- line will be `nil` if they hit escape without entering anything
+                -- An empty string if they just hit enter
+                -- Or the actual line of text they wrote
+                if line then
+                    window:active_tab():set_title(line)
+                end
+            end),
         }),
     },
 }
 
 local key_tables = {
     resize_font = {
-        { key = "k", action = act.IncreaseFontSize },
-        { key = "j", action = act.DecreaseFontSize },
-        { key = "r", action = act.ResetFontSize },
+        { key = "k",      action = act.IncreaseFontSize },
+        { key = "j",      action = act.DecreaseFontSize },
+        { key = "r",      action = act.ResetFontSize },
         { key = "Escape", action = "PopKeyTable" },
-        { key = "q", action = "PopKeyTable" },
+        { key = "q",      action = "PopKeyTable" },
     },
     resize_pane = {
-        { key = "k", action = act.AdjustPaneSize({ "Up", 1 }) },
-        { key = "j", action = act.AdjustPaneSize({ "Down", 1 }) },
-        { key = "h", action = act.AdjustPaneSize({ "Left", 1 }) },
-        { key = "l", action = act.AdjustPaneSize({ "Right", 1 }) },
+        { key = "k",      action = act.AdjustPaneSize({ "Up", 1 }) },
+        { key = "j",      action = act.AdjustPaneSize({ "Down", 1 }) },
+        { key = "h",      action = act.AdjustPaneSize({ "Left", 1 }) },
+        { key = "l",      action = act.AdjustPaneSize({ "Right", 1 }) },
         { key = "Escape", action = "PopKeyTable" },
-        { key = "q", action = "PopKeyTable" },
+        { key = "q",      action = "PopKeyTable" },
     },
 }
 

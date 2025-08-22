@@ -108,7 +108,7 @@ M.setup = function()
 
         -- Admin Icon
         if is_admin then
-        M.push(bg, fg, { Intensity = "Bold" }, " " .. GLYPH_ADMIN)
+            M.push(bg, fg, { Intensity = "Bold" }, " " .. GLYPH_ADMIN)
         end
 
         -- Title
@@ -116,7 +116,7 @@ M.setup = function()
 
         -- Unseen output alert
         if has_unseen_output then
-        M.push(bg, "#FF3B8B", { Intensity = "Bold" }, " " .. GLYPH_CIRCLE)
+            M.push(bg, "#FF3B8B", { Intensity = "Bold" }, " " .. GLYPH_CIRCLE)
         end
 
         -- Right padding

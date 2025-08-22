@@ -13,8 +13,8 @@ if platform.is_win then
         { label = " Cmd", args = { "cmd" } },
         { label = " Nushell", args = { "nu" } },
         {
-        label = " GitBash",
-        args = { "C:\\soft\\Git\\bin\\bash.exe" },
+            label = " GitBash",
+            args = { "C:\\soft\\Git\\bin\\bash.exe" },
         },
     }
 elseif platform.is_mac then
