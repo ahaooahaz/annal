@@ -234,6 +234,8 @@ BEGIN{max=-1e10;min=1e10;sum=0;n=0}
 {sum+=$1;n+=1;if($1>max)max=$1;if($1<min)min=$1}
 END{print "Max:", max, "Min:", min, "Mean:", (n>2)?(sum-min-max)/(n-2):sum/n}'\'
 
+alias clear='printf "\033[H\033[J"'
+
 # completion.
 apps=(kubectl helm)
 for app in ${apps}; do
