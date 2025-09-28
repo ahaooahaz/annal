@@ -1,30 +1,47 @@
-; AHK v2 - Win11 锁屏自动关显示器
-
+; AHK v2 - Win11 锁屏后延迟5秒黑屏
 #Requires Autohotkey v2.0
 
 ; 注册脚本窗口接收会话通知
-DllCall("Wtsapi32.dll\WTSRegisterSessionNotification"
-    , "Ptr", A_ScriptHwnd
-    , "UInt", 0)  ; NOTIFY_FOR_THIS_SESSION
+DllCall("Wtsapi32.dll\WTSRegisterSessionNotification", "Ptr", A_ScriptHwnd, "UInt", 0)
 
-; 注册消息处理函数
-OnMessage(0x2B1, WM_WTSSESSION_CHANGE) ; 0x2B1 = WM_WTSSESSION_CHANGE
+; 全局变量记录定时器状态
+g_ScreenOffTimer := 0
 
-; 保持脚本驻留
-Loop
-    Sleep 1000
-
-return
+OnMessage(0x2B1, WM_WTSSESSION_CHANGE)
+Persistent true
+OnExit((*) => DllCall("Wtsapi32.dll\WTSUnRegisterSessionNotification", "Ptr", A_ScriptHwnd))
 
 WM_WTSSESSION_CHANGE(wParam, lParam, msg, hwnd) {
-    ; WTS_SESSION_LOCK = 0x7
-    if (wParam = 0x7) {
-        ; 关闭显示器
-        DllCall("user32.dll\SendMessageA"
-            , "Ptr", 0xFFFF       ; HWND_BROADCAST
-            , "UInt", 0x112       ; WM_SYSCOMMAND
-            , "UInt", 0xF170      ; SC_MONITORPOWER
-            , "Int", 2             ; 2 = 关闭显示器
-        )
+    global g_ScreenOffTimer
+
+    if (wParam = 0x7) { ; 锁屏
+        ; 取消可能存在的旧定时器
+        if (g_ScreenOffTimer) {
+            SetTimer(g_ScreenOffTimer, 0)
+        }
+        ; 设置5秒后关闭屏幕的新定时器
+        g_ScreenOffTimer := CloseScreenAfterDelay
+        SetTimer(g_ScreenOffTimer, -5000)
     }
+    else if (wParam = 0x8) { ; 解锁
+        ; 取消定时器
+        if (g_ScreenOffTimer) {
+            SetTimer(g_ScreenOffTimer, 0)
+            g_ScreenOffTimer := 0
+        }
+        ; 恢复屏幕
+        RestoreScreen()
+    }
+}
+
+CloseScreenAfterDelay() {
+    ; 关闭屏幕背光
+    DllCall("user32.dll\SendMessage", "Ptr", 0xFFFF, "UInt", 0x112, "UInt", 0xF170, "Int", 2)
+    ; 清空定时器引用
+    g_ScreenOffTimer := 0
+}
+
+RestoreScreen() {
+    ; 恢复屏幕显示
+    DllCall("user32.dll\SendMessage", "Ptr", 0xFFFF, "UInt", 0x112, "UInt", 0xF170, "Int", -1)
 }
