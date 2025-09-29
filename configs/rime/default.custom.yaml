@@ -3,8 +3,7 @@
 patch:
   # 修改输入模式列表
   schema_list:
-    - schema: "ahaooahaz_pinyin_simp"
-      #- schema: "double_pinyin_flypy"
+    - schema: "rime_ice"
   switcher:
     # 修改设置菜单标题
     caption: "【设置菜单】"

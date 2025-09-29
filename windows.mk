@@ -12,8 +12,11 @@ nushell:
 	'robocopy "configs\\nushell\\" "$$env:USERPROFILE\\AppData\\Roaming\\nushell\\" /E /IS /R:0 /W:0 /V ; $$true'
 
 rime:
+	-git clone git@github.com:iDvel/rime-ice.git plugins/rime-ice
 	powershell -Command \
-	'robocopy "configs\\rime\\" "$$env:USERPROFILE\\AppData\\Roaming\\Rime\\" /E /IS /R:0 /W:0 /V ; $$true'
+    "robocopy 'configs\rime' 'plugins\rime-ice\' /E /IS /R:0 /W:0 /V ; $$true"
+	powershell -Command \
+	"robocopy 'plugins\rime-ice' $$env:USERPROFILE'\AppData\Roaming\Rime\' /E /IS /R:0 /W:0 /V ; $$true"
 
 autohotkey:
 	powershell -Command \

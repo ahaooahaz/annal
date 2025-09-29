@@ -13,5 +13,9 @@ max_line_length = 80
 [*.py]
 indent_style = space
 
-[Makefile,*.mk]
+[{Makefile,*.mk,custom_phrase.txt}]
 indent_style = tab
+
+[*.{yml,yaml}]
+indent_size = 2
+indent_style = space

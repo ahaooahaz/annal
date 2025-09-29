@@ -1,3 +1,6 @@
+# encoding: utf-8
+# platform: windows
+
 # windows weasel 使用的配置
 customization:
   distribution_code_name: Weasel

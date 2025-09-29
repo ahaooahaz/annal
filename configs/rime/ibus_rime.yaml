@@ -1,2 +1,4 @@
+# encoding: utf-8
+# platform: linux
 # ibus_rime.yaml用于让ibus_rime.custom.yaml生效
 # ref: https://github.com/rime/ibus-rime/issues/42#issuecomment-727666959
