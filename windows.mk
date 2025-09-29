@@ -1,5 +1,5 @@
 SHELL = cmd.exe
-TARGETS = wezterm nushell rime
+TARGETS = wezterm nushell rime autohotkey
 
 env: $(TARGETS)
 
@@ -14,3 +14,7 @@ nushell:
 rime:
 	powershell -Command \
 	'robocopy "configs\\rime\\" "$$env:USERPROFILE\\AppData\\Roaming\\Rime\\" /E /IS /R:0 /W:0 /V ; $$true'
+
+autohotkey:
+	powershell -Command \
+	"robocopy 'configs\autohotkey' $$env:USERPROFILE'\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup' /E /IS /R:0 /W:0 /V ; $$true"
