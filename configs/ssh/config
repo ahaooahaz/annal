@@ -11,7 +11,7 @@ UserKnownHostsFile /dev/null
 
 # Reuse the same connection
 ControlMaster auto
-ControlPath /tmp/ssh_mux_%h_%p_%r
+ControlPath /tmp/ssh_mux_%C
 
 # Keep one connection in 72hour
 ControlPersist 72h

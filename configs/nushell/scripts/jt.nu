@@ -51,15 +51,18 @@ def print-help [] {
 def register [] {
     let ip = (input "Please input register ip: ")
     let user = (input "Please input register user: ")
-    let password = (input "Please input register password: ")
     let port = (input "Please input register port: ")
 
     # Validate input
-    if ($ip | is-empty) or ($user | is-empty) or ($password | is-empty) {
+    if ($ip | is-empty) or ($user | is-empty) {
         alert "Invalid input: All fields except 2FA secret are required"
         return
     }
+    let id_rsa_pub = (ls ~/.ssh | where name =~ '\.pub$' | first | get name)
+    print $id_rsa_pub
+    open $id_rsa_pub | ssh $"($user)@($ip)" "awk 1 ORS=\"\\n\" >> ~/.ssh/authorized_keys"
 
+    let password = "any"
     # Encode password
     let crypted = ($password | encode base64)
     let line = $"($user),($ip),($crypted),($port)\n"
@@ -68,6 +71,7 @@ def register [] {
     let config_dir = ($CONFIG_PATH | path dirname)
     mkdir $config_dir
     $line | save $CONFIG_PATH --append
+    let id_rsa_pub = (open --raw $CONFIG_PATH)
 
     info "Machine registered successfully!"
 }
@@ -102,7 +106,7 @@ def login [address: string] {
                 port: $parsed.3
             }
         }
-        | where {|it| 
+        | where {|it|
             ($it.ip | str ends-with $address) or ($it.user =~ $address)
         }
     )
@@ -112,15 +116,14 @@ def login [address: string] {
         1 => { connect ($candidates | first) }
         _ => {
             info "Multiple matches found:"
-            let choices = ($candidates 
-                | enumerate 
-                | each {|it| 
+            $candidates
+                | enumerate
+                | each {|it|
                     {
-                        index: $it.index
-                        machine: $"($it.item.user)@($it.item.ip):($it.item.port)"
-                    }
+                        $it.index: $"($it.item.user)@($it.item.ip):($it.item.port)"
+                    } | print
                 }
-            )
+
             let selected = (input "Select machine index: " | into int)
             connect ($candidates | get $selected)
         }
@@ -129,7 +132,7 @@ def login [address: string] {
 
 def connect [record: record] {
     info $"Connecting to ($record.user)@($record.ip)..."
-    
+
     let port = ($record.port? | default "22")
     ssh -o StrictHostKeyChecking=no -p $port $"($record.user)@($record.ip)"
 }
