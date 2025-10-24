@@ -1,0 +1,13 @@
+Host *
+    GSSAPIAuthentication=no
+    StrictHostKeyChecking=no
+    UserKnownHostsFile /dev/null
+    CheckHostIP=no
+    TCPKeepAlive=yes
+    ServerAliveInterval=15
+    ForwardAgent=yes
+    ControlMaster auto
+    ControlPath /tmp/ssh_mux_%C
+    ControlPersist 72h
+
+Include ~/.ssh/config.d/*

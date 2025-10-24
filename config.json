@@ -206,7 +206,7 @@
             "name": "ssh",
             "links": [
                 {
-                    "dst": "configs/ssh/config",
+                    "dst": "configs/ssh/linux/config",
                     "link": "~/.ssh/config"
                 }
             ],

@@ -1,0 +1,10 @@
+Host *
+    GSSAPIAuthentication=no
+    StrictHostKeyChecking=no
+    UserKnownHostsFile /dev/null
+    CheckHostIP=no
+    TCPKeepAlive=yes
+    ServerAliveInterval=15
+    ForwardAgent=yes
+
+Include ~/.ssh/config.d/*
