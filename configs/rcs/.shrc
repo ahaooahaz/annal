@@ -4,7 +4,7 @@ case $- in
       *) return;;
 esac
 
-CURRSHELL=$(< /proc/$$/comm)
+ CURRSHELL=$(< /proc/$$/comm)
 if [[ "${CURRSHELL}" == "zsh" ]]; then
     [[ -o login ]] || exec ${CURRSHELL} -l
 elif [[ "${CURRSHELL}" == "bash" ]]; then

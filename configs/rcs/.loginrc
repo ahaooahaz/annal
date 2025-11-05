@@ -1,5 +1,3 @@
-set -a
-
 #############
 # Functions #
 #############
@@ -109,9 +107,8 @@ function condasetup() {
     fi
     unset __conda_setup
 }
-set +a
 
-add_to() {
+function add_to() {
     local env="$1"
     shift
     eval "local current_val=\$$env"
@@ -123,6 +120,12 @@ add_to() {
     done
     eval "export $env=\"${current_val%:}\""
 }
+
+if [[ -z "$ANNAL_ENVRC_LOADED" ]]; then
+  export ANNAL_ENVRC_LOADED=1
+else
+    return 0
+fi
 
 #######
 # ENV #
