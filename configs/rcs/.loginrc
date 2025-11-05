@@ -132,12 +132,6 @@ export XDG_CONFIG_HOME=~/.config
 export XDG_CACHE_HOME=~/.cache
 export XDG_DATA_HOME=~/.local/share
 
-# C/C++ env.
-export C_INCLUDE_PATH="$HOME/.local/include:$C_INCLUDE_PATH"
-export CPLUS_INCLUDE_PATH=$C_INCLUDE_PATH
-export LIBRARY_PATH=$LD_LIBRARY_PATH
-export PKG_CONFIG_PATH="$HOME/.local/lib/pkgconfig:$PKG_CONFIG_PATH"
-
 # Golang env.
 ZGOPATH="$HOME/dev/go"
 if [[ -s "$HOME/.gvm/scripts/gvm" ]]; then
@@ -176,5 +170,4 @@ export QT_IM_MODULE=ibus
 include -f ${HOME}/.inti_envrc
 
 # runtime env.
-add_to PATH $HOME/.local/bin $HOME/.local/scripts $GOPATH/bin $HOME/.cargo/bin
-add_to LD_LIBRARY_PATH $HOME/.local/lib
+add_to PATH $HOME/.local/bin $HOME/.local/scripts $GOPATH/bin $HOME/.cargo/bin $HOME/.local/cmake/bin
