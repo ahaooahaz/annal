@@ -13,6 +13,8 @@ elif [[ "${CURRSHELL}" == "bash" ]]; then
     fi
 fi
 
+include -f "${HOME}/.inti_shrc"
+
 #=====================#
 # Directory Shortcuts #
 #=====================#
