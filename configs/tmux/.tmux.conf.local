@@ -393,7 +393,7 @@ bind - splitw -v -c "#{pane_current_path}"
 
 # 垂直分屏修改为前缀键+%
 unbind %
-bind \ splitw -h -c "#{pane_current_path}"
+bind \\ splitw -h -c "#{pane_current_path}"
 
 # 切换小窗口的快捷键修改为前缀键+hjkl
 bind-key h select-pane -L
@@ -507,3 +507,4 @@ set -g @yank_selection_mouse 'clipboard'
 #
 # "$@"
 # # /!\ do not remove the previous line
+set -g terminal-overrides 'xterm*:smcup@:rmcup@'
