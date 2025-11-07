@@ -8,6 +8,14 @@ return {
     -- scrollbar
     scrollback_lines = 5000,
 
+    audible_bell = "Disabled", -- 禁用终端 bell 声音
+    visual_bell = {
+        fade_in_function = "EaseIn",
+        fade_in_duration_ms = 75,
+        fade_out_function = "EaseOut",
+        fade_out_duration_ms = 75,
+    },
+
     -- paste behaviours
     canonicalize_pasted_newlines = "CarriageReturn",
 
