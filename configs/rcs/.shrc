@@ -45,19 +45,10 @@ if [[ "${CURRSHELL}" == "zsh" ]]; then
     # Key Binding
     bindkey -v
     bindkey -r '^['  # Unbind [Esc]    (default: vi-cmd-mode)
-    bindkey '^A'   beginning-of-line   # [Ctrl-A]
-    bindkey '^B'   vi-backward-blank-word       # [Ctrl-B]
-    bindkey '^N'   vi-forward-blank-word-end        # [Ctrl-N]
-    bindkey '^E'   end-of-line         # [Ctrl-E]
     bindkey "^D"   delete-char         # [Ctrl-D]
-    bindkey "^K"   kill-line           # [Ctrl-K]
     bindkey '^Z'   undo                # [Ctrl-Z]
     bindkey '^Y'   redo                # [Ctrl-Y]
-    bindkey ' '    magic-space         # [Space]     Trigger history expansion
     bindkey '^[^M' self-insert-unmeta  # [Alt-Enter] Insert newline
-    bindkey '^R' history-incremental-search-backward  # [Ctrl-R] history search
-    bindkey "^[[1;5C" forward-word   # Ctrl + →
-    bindkey "^[[1;5D" backward-word  # Ctrl + ←
 
     # Plugins
     include -f "${HOME}/.zcomet/zcomet.zsh"
@@ -65,10 +56,15 @@ if [[ "${CURRSHELL}" == "zsh" ]]; then
     zcomet load ohmyzsh lib {completion,clipboard}.zsh
     zcomet load ohmyzsh plugins/autojump
     zcomet load ohmyzsh plugins/history
-    zcomet load ohmyzsh plugins/history-substring-search
+
+    zcomet load zsh-users/zsh-history-substring-search
+    bindkey '^[[1;5A' history-substring-search-up
+    bindkey '^[[1;5B' history-substring-search-down
+
     zcomet load ohmyzsh plugins/git
     zcomet load tj/git-extras etc git-extras-completion.zsh
     zcomet load hlissner/zsh-autopair
+    zcomet load marlonrichert/zsh-edit
 
     zcomet compinit
 

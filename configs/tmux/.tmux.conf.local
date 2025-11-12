@@ -1,4 +1,4 @@
-# -- ahaoaha custom color -------------------------------------------------------
+# -- custom color -------------------------------------------------------
 # 设置边界颜色（bg背景颜色， fg为线条颜色） 
 set  -g pane-border-style fg='#742727',bg=black
 # 设置正在使用的窗口的边界颜色，在不同窗口切换时边界颜色会变化
@@ -508,3 +508,5 @@ set -g @yank_selection_mouse 'clipboard'
 # "$@"
 # # /!\ do not remove the previous line
 set -g terminal-overrides 'xterm*:smcup@:rmcup@'
+
+set -g xterm-keys on
