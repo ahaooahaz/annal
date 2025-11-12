@@ -49,6 +49,15 @@ links:
 upgrade:
 	find plugins -maxdepth 1 -mindepth 1 -type d -exec git -C {} pull \;
 
+prune:
+	set +x;\
+	jq -r '.plugins[].links[] | [.dst, .link] | @tsv' config.json | \
+	while read dst link; do \
+		dst=$$(eval echo "$$dst"); \
+		link=$$(eval echo "$$link"); \
+		find $$(dirname $$link) -maxdepth 1 -mindepth 1 -name "$$(basename $$link).backup.*" | xargs -I {} bash -c 'echo "cleaned: {}"; rm -rf {}'; \
+	done
+
 $(PACKAGE_PLUGINS):
 	if ! type $@ 2>/dev/null; then $(SUDO) $(PKG_MANAGER) install $@ -y; fi
 
