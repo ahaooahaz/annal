@@ -8,7 +8,7 @@ INSTALL_PATH = $${HOME}/.local/bin
 SHELL = /bin/bash
 VERBOSE ?= 1
 
-PACKAGE_PLUGINS = sshpass base64 at xsel bat
+PACKAGE_PLUGINS = sshpass base64 at xsel bat jq
 
 ifneq ($(findstring "ubuntu", $(OS_RELEASE)),)
 	PKG_MANAGER := apt
@@ -24,8 +24,27 @@ endif
 
 all: env
 
-env:
-	python3 install.py
+env: clones links
+
+clones:
+	mkdir -p plugins
+	jq -r '.plugins[] | select(.repo != null) | [.name, .repo] | @tsv' config.json | \
+	while read name repo; do \
+		git clone https://github.com/$$repo.git plugins/$$name; \
+		echo "cloned: $$repo -> plugins/$$name"; \
+	done
+
+links:
+	set +x;\
+	jq -r '.plugins[].links[] | [.dst, .link] | @tsv' config.json | \
+	while read dst link; do \
+		dst=$$(eval echo "$$dst"); \
+		link=$$(eval echo "$$link"); \
+		mkdir -p "$$(dirname "$$link")"; \
+		mv $$link $${link}.backup.$$(date +%s) || :; \
+		ln -sf "$$(realpath "$$dst")" "$$link"; \
+		echo "linked: $$link → $$dst"; \
+	done
 
 upgrade:
 	find plugins -maxdepth 1 -mindepth 1 -type d -exec git -C {} pull \;

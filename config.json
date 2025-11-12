@@ -8,10 +8,6 @@
                     "dst": "plugins/zcomet",
                     "link": "~/.zcomet"
                 }
-            ],
-            "actions": [
-                "clone",
-                "link"
             ]
         },
         {
@@ -22,10 +18,6 @@
                     "dst": "plugins/jumpto/jt.sh",
                     "link": "~/.local/bin/jt"
                 }
-            ],
-            "actions": [
-                "clone",
-                "link"
             ]
         },
         {
@@ -44,102 +36,6 @@
                     "dst": "configs/tmux/.tmux.conf.local",
                     "link": "~/.tmux.conf.local"
                 }
-            ],
-            "actions": [
-                "clone",
-                "link"
-            ]
-        },
-        {
-            "name": "rime",
-            "links": [
-                {
-                    "dst": "configs/rime/ahaooahaz_pinyin.dict.yaml",
-                    "link": "~/.config/ibus/rime/ahaooahaz_pinyin.dict.yaml"
-                },
-                {
-                    "dst": "configs/rime/ahaooahaz.extended.dict.yaml",
-                    "link": "~/.config/ibus/rime/ahaooahaz.extended.dict.yaml"
-                },
-                {
-                    "dst": "configs/rime/default.custom.yaml",
-                    "link": "~/.config/ibus/rime/default.custom.yaml"
-                },
-                {
-                    "dst": "configs/rime/luna_pinyin_simp.custom.yaml",
-                    "link": "~/.config/ibus/rime/luna_pinyin_simp.custom.yaml"
-                },
-                {
-                    "dst": "configs/rime/ahaooahaz_pinyin_simp.schema.yaml",
-                    "link": "~/.config/ibus/rime/ahaooahaz_pinyin_simp.schema.yaml"
-                },
-                {
-                    "dst": "configs/rime/symbols_v.yaml",
-                    "link": "~/.config/ibus/rime/symbols_v.yaml"
-                },
-                {
-                    "dst": "configs/rime/rime.lua",
-                    "link": "~/.config/ibus/rime/rime.lua"
-                },
-                {
-                    "dst": "configs/rime/lua",
-                    "link": "~/.config/ibus/rime/lua"
-                },
-                {
-                    "dst": "configs/rime/custom_phrase.txt",
-                    "link": "~/.config/ibus/rime/custom_phrase.txt"
-                },
-                {
-                    "dst": "configs/rime/ibus_rime.custom.yaml",
-                    "link": "~/.config/ibus/rime/ibus_rime.custom.yaml"
-                },
-                {
-                    "dst": "configs/rime/ibus_rime.yaml",
-                    "link": "~/.config/ibus/rime/ibus_rime.yaml"
-                }
-            ],
-            "actions": [
-                "link"
-            ],
-            "childrens": [
-                {
-                    "name": "rime-ice",
-                    "repo": "iDvel/rime-ice",
-                    "links": [
-                        {
-                            "dst": "plugins/rime-ice/rime_ice.dict.yaml",
-                            "link": "~/.config/ibus/rime/rime_ice.dict.yaml"
-                        },
-                        {
-                            "dst": "plugins/rime-ice/cn_dicts",
-                            "link": "~/.config/ibus/rime/cn_dicts"
-                        },
-                        {
-                            "dst": "plugins/rime-ice/en_dicts",
-                            "link": "~/.config/ibus/rime/en_dicts"
-                        },
-                        {
-                            "dst": "plugins/rime-ice/radical_pinyin.dict.yaml",
-                            "link": "~/.config/ibus/rime/radical_pinyin.dict.yaml"
-                        },
-                        {
-                            "dst": "plugins/rime-ice/melt_eng.dict.yaml",
-                            "link": "~/.config/ibus/rime/melt_eng.dict.yaml"
-                        },
-                        {
-                            "dst": "plugins/rime-ice/melt_eng.schema.yaml",
-                            "link": "~/.config/ibus/rime/melt_eng.schema.yaml"
-                        },
-                        {
-                            "dst": "plugins/rime-ice/opencc",
-                            "link": "~/.config/ibus/rime/opencc"
-                        }
-                    ],
-                    "actions": [
-                        "clone",
-                        "link"
-                    ]
-                }
             ]
         },
         {
@@ -149,9 +45,6 @@
                     "dst": "configs/kitty",
                     "link": "~/.config/kitty"
                 }
-            ],
-            "actions": [
-                "link"
             ]
         },
         {
@@ -165,9 +58,6 @@
                     "dst": "configs/nvim",
                     "link": "~/.config/nvim"
                 }
-            ],
-            "actions": [
-                "link"
             ]
         },
         {
@@ -197,9 +87,6 @@
                     "dst": "configs/rcs/.logoutrc",
                     "link": "~/.bash_logout"
                 }
-            ],
-            "actions": [
-                "link"
             ]
         },
         {
@@ -209,9 +96,6 @@
                     "dst": "configs/ssh/linux/config",
                     "link": "~/.ssh/config"
                 }
-            ],
-            "actions": [
-                "link"
             ]
         },
         {
@@ -221,9 +105,6 @@
                     "dst": "scripts/linux",
                     "link": "~/.local/scripts"
                 }
-            ],
-            "actions": [
-                "link"
             ]
         }
     ]
