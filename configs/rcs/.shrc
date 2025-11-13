@@ -58,8 +58,8 @@ if [[ "${CURRSHELL}" == "zsh" ]]; then
     zcomet load ohmyzsh plugins/history
 
     zcomet load zsh-users/zsh-history-substring-search
-    bindkey '^[[1;5A' history-substring-search-up
-    bindkey '^[[1;5B' history-substring-search-down
+    bindkey '^[[A' history-substring-search-up
+    bindkey '^[[B' history-substring-search-down
 
     zcomet load ohmyzsh plugins/git
     zcomet load tj/git-extras etc git-extras-completion.zsh
