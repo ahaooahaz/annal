@@ -4,7 +4,7 @@ case $- in
       *) return;;
 esac
 
- CURRSHELL=$(< /proc/$$/comm)
+CURRSHELL=$(< /proc/$$/comm)
 if [[ "${CURRSHELL}" == "zsh" ]]; then
     [[ -o login ]] || exec ${CURRSHELL} -l
 elif [[ "${CURRSHELL}" == "bash" ]]; then
@@ -28,8 +28,6 @@ export FZF_DEFAULT_OPTS='--ansi --height=60% --reverse --cycle --bind=tab:accept
 # bat
 export BAT_THEME='OneHalfDark'
 # man
-export MANPAGER='sh -c "col -bx | bat -pl man --theme=Monokai\ Extended"'
-export MANROFFOPT='-c'
 export HISTFILE=~/.${CURRSHELL}_history
 export HISTSIZE=1000000  # number of commands that are loaded
 export SAVEHIST=1000000  # number of commands that are stored
@@ -43,44 +41,44 @@ if [[ "${CURRSHELL}" == "zsh" ]]; then
     include -f "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 
     # Key Binding
-    bindkey -v
-    bindkey -r '^['  # Unbind [Esc]    (default: vi-cmd-mode)
-    bindkey "^D"   delete-char         # [Ctrl-D]
-    bindkey '^Z'   undo                # [Ctrl-Z]
-    bindkey '^Y'   redo                # [Ctrl-Y]
-    bindkey '^[^M' self-insert-unmeta  # [Alt-Enter] Insert newline
+    bindkey -v # use zsh vi-mode.
 
     # Plugins
     include -f "${HOME}/.zcomet/zcomet.zsh"
 
+    # order: 1, default keymap.
+    zcomet load marlonrichert/zsh-edit
+    # NOTE: custom bindkeys.
+    bindkey -M vicmd -r '^D' # unbind <Ctrl-D> in vicmd mode.
+    bindkey -M viins -r '^D' # unbind <Ctrl-D> in viins mode.
+    bindkey -M viins '^D' delete-char # bind <Ctrl-D> in viins mode, delete-char.
+    bindkey -M viins '^Z' undo        # [Ctrl-Z]
+
+    zcomet load zdharma-continuum/fast-syntax-highlighting
+
     zcomet load ohmyzsh lib {completion,clipboard}.zsh
     zcomet load ohmyzsh plugins/autojump
     zcomet load ohmyzsh plugins/history
-
-    zcomet load zsh-users/zsh-history-substring-search
+    zcomet load ohmyzsh plugins/history-substring-search
     bindkey '^[[A' history-substring-search-up
     bindkey '^[[B' history-substring-search-down
+    HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=1
 
     zcomet load ohmyzsh plugins/git
     zcomet load tj/git-extras etc git-extras-completion.zsh
     zcomet load hlissner/zsh-autopair
-    zcomet load marlonrichert/zsh-edit
+
+    zcomet load romkatv/powerlevel10k
+    zcomet load trapd00r/LS_COLORS
 
     zcomet compinit
 
+    # NOTE: zstyle must behind compinit.
     zcomet load Aloxaf/fzf-tab
-    #zstyle ':fzf-tab:*' fzf-bindings 'tab:accept'
     zstyle ':fzf-tab:*' fzf-bindings-default 'tab:down,btab:up,change:top,ctrl-space:toggle,bspace:backward-delete-char,ctrl-h:backward-delete-char'
     zstyle ':fzf-tab:complete:kill:argument-rest' fzf-preview 'ps --pid=$word -o cmd --no-headers -w -w'
     zstyle ':fzf-tab:complete:kill:argument-rest' fzf-flags '--preview-window=down:3:wrap'
     zstyle ':fzf-tab:complete:kill:*' popup-pad 0 3
-
-    # zcomet load zsh-users/zsh-autosuggestions
-    # zcomet load zsh-users/zsh-syntax-highlighting
-    zcomet load zdharma-continuum/fast-syntax-highlighting
-
-    zcomet load romkatv/powerlevel10k
-    zcomet load trapd00r/LS_COLORS
 
     # Configs
     # zsh misc
