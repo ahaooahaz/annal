@@ -40,11 +40,9 @@ if [[ "${CURRSHELL}" == "zsh" ]]; then
     # P10k Instant Prompt
     include -f "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 
-    # Key Binding
-    bindkey -v # use zsh vi-mode.
-
     # Plugins
     include -f "${HOME}/.zcomet/zcomet.zsh"
+    zcomet load jeffreytse/zsh-vi-mode
 
     # order: 1, default keymap.
     zcomet load marlonrichert/zsh-edit
