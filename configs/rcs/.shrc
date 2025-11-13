@@ -62,13 +62,13 @@ if [[ "${CURRSHELL}" == "zsh" ]]; then
     bindkey '^[[A' history-substring-search-up
     bindkey '^[[B' history-substring-search-down
     HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=1
-
-    zcomet load ohmyzsh plugins/git
-    zcomet load ajeetdsouza/zoxide # NOTE: need install zoxide first.
+    zcomet load ohmyzsh plugins/zoxide # NOTE: need install zoxide first.
     __zoxide_z_complete () {
         args=$(zoxide query -l)
         _arguments "1:profiles:($args)"
     }
+
+    zcomet load ohmyzsh plugins/git
     zcomet load tj/git-extras etc git-extras-completion.zsh
     zcomet load hlissner/zsh-autopair
 
