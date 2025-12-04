@@ -32,6 +32,8 @@ export HISTFILE=~/.${CURRSHELL}_history
 export HISTSIZE=1000000  # number of commands that are loaded
 export SAVEHIST=1000000  # number of commands that are stored
 
+export GPG_TTY=$(tty)
+
 if [[ "${CURRSHELL}" == "zsh" ]]; then
 #=====================#
 #     Zsh config      #

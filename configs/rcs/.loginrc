@@ -139,8 +139,6 @@ export XDG_DATA_HOME=~/.local/share
 export LUA_LOCAL_PATH=$HOME/.luarocks
 export LUA_PATH="$LUA_LOCAL_PATH/share/lua/5.1/?.lua;$LUA_LOCAL_PATH/share/lua/5.1/?/?.lua;;"
 
-export GPG_TTY=$(tty)
-
 # input env.
 export GIT_EDITOR=nvim
 export EDITOR=nvim
