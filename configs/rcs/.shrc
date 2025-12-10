@@ -4,7 +4,9 @@ case $- in
       *) return;;
 esac
 
-CURRSHELL=$(< /proc/$$/comm)
+CURRSHELL=$(ps -p $$ -o comm=)
+CURRSHELL=${CURRSHELL#-}
+CURRSHELL=$(basename "$CURRSHELL")
 if [[ "${CURRSHELL}" == "zsh" ]]; then
     [[ -o login ]] || exec ${CURRSHELL} -l
 elif [[ "${CURRSHELL}" == "bash" ]]; then
@@ -22,7 +24,6 @@ hash -d config=$XDG_CONFIG_HOME
 hash -d cache=$XDG_CACHE_HOME
 hash -d data=$XDG_DATA_HOME
 hash -d zdot=$ZDOTDIR
-
 # fzf
 export FZF_DEFAULT_OPTS='--ansi --height=60% --reverse --cycle --bind=tab:accept'
 # bat
@@ -254,3 +255,6 @@ for app in ${apps}; do
         source <(${app} --completion ${CURRSHELL})
     fi
 done
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

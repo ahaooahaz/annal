@@ -1,0 +1,59 @@
+# encoding: utf-8
+# platform: darwin
+
+patch:
+  show_notifications: false
+  style:
+    # color_scheme: gruvbox
+    # 修改字体其他字体导致在windows主页搜索框输入中文时卡顿
+    font_face: "JetBrainsMono Nerd Font"
+    font_point: 18
+    horizontal: false
+    inline_preedit: true
+    fullscreen: false # 全屏排列：true；false
+    vertical_text: false # 竖排：true；false
+    vertical_text_left_to_right: false # 竖排下从左到右：true；false
+    vertical_text_with_wrap: false # 竖排下，自动换行：true；false
+    vertical_auto_reverse: false # 竖排下，输入窗口在上方时倒序排列：true；false
+
+    # 输入法界面布局
+    corner_radius: 4.0
+    hilited_corner_radius: 4.0
+    base_offset: -0.2
+    border_height: 0.25
+    border_width: 0.25
+    border_color_width: 0.0
+    line_spacing: 1.0
+    color_space: display_p3
+    translucency: true # 背景半透明总开关，不需要关掉即可
+    # color_scheme: ForbiddenCity # 亮色颜色方案
+    # color_scheme_dark: NightMountain # 暗色颜色方案
+
+    preset_color_schemes:
+      Bamboo:
+        name: "雪中竹林"
+        author: "Yiming <yiming.ma.cv@outlook.com>"
+        back_color: "0xF9FEFF" # 雪白
+        text_color: "0x35404A" # 鹤灰
+        hilited_text_color: "0xF9FEFF" # 雪白
+        hilited_back_color: "0x748B6E" # 瓦松绿
+        hilited_candidate_text_color: "0xF9FEFF" # 雪白
+        hilited_candidate_back_color: "0x84A71B" # 竹绿
+        hilited_candidate_label_color: "0xF9FEFF" # 雪白
+        hilited_comment_text_color: "0xF9FEFF" # 雪白
+        candidate_text_color: "0x333436" # 长石灰
+        label_color: "0x728091" # 银灰
+        comment_text_color: "0x6E7680" # 雁灰
+#   app_options:
+#     Code.exe:
+#       ascii_mode: true # 默认使用英文输入
+#     gvim.exe:
+#       ascii_mode: true
+#     bash.exe:
+#       ascii_mode: true
+#     powershell.exe:
+#       ascii_mode: true
+#     WindowsTerminal.exe:
+#       ascii_mode: true
+#     nu.exe:
+#       ascii_mode: true
