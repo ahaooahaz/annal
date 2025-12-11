@@ -121,6 +121,13 @@ function add_to() {
     eval "export $env=\"${current_val%:}\""
 }
 
+source_if_exists () {
+    if test -r "$1"; then
+        echo "sourcing $1"
+        source "$1"
+    fi
+}
+
 if [[ -z "$ANNAL_ENVRC_LOADED" ]]; then
   export ANNAL_ENVRC_LOADED=1
 else

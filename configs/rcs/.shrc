@@ -77,6 +77,13 @@ if [[ "${CURRSHELL}" == "zsh" ]]; then
 
     zcomet load romkatv/powerlevel10k
     zcomet load trapd00r/LS_COLORS
+    zcomet load joshskidmore/zsh-fzf-history-search
+    # see issue: https://github.com/jeffreytse/zsh-vi-mode/issues/4
+    function after_init() {
+        bindkey -M viins '^R' fzf_history_search
+        bindkey -M vicmd '/' fzf_history_search
+    }
+    zvm_after_init_commands+=(after_init)
 
     zcomet compinit
 
@@ -255,6 +262,3 @@ for app in ${apps}; do
         source <(${app} --completion ${CURRSHELL})
     fi
 done
-
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
