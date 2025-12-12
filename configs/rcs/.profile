@@ -109,16 +109,19 @@ function condasetup() {
 }
 
 function add_to() {
-    local env="$1"
+    local envname="$1"
     shift
-    eval "local current_val=\$$env"
-    for dir in "$@"; do
+    local current_val
+    eval "current_val=\${$envname}"
+
+    for dir in "$@" ; do
         case ":$current_val:" in
             *":$dir:"*) ;;
             *) current_val="$dir:$current_val" ;;
         esac
     done
-    eval "export $env=\"${current_val%:}\""
+
+    eval "export $envname=\"$current_val\""
 }
 
 source_if_exists () {
@@ -128,11 +131,11 @@ source_if_exists () {
     fi
 }
 
-if [[ -z "$ANNAL_ENVRC_LOADED" ]]; then
-  export ANNAL_ENVRC_LOADED=1
-else
-    return 0
-fi
+#if [[ -z "$ANNAL_ENVRC_LOADED" ]]; then
+#  export ANNAL_ENVRC_LOADED=1
+#else
+#    return 0
+#fi
 
 #######
 # ENV #

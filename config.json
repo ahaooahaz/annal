@@ -64,23 +64,27 @@
             "name": "shell",
             "links": [
                 {
-                    "dst": "configs/rcs/.shrc",
+                    "dst": "configs/rcs/.shell",
                     "link": "~/.zshrc"
                 },
                 {
-                    "dst": "configs/rcs/.loginrc",
+                    "dst": "configs/rcs/.env",
                     "link": "~/.zshenv"
                 },
                 {
-                    "dst": "configs/rcs/.shrc",
+                    "dst": "configs/rcs/.shell",
                     "link": "~/.bashrc"
                 },
                 {
-                    "dst": "configs/rcs/.loginrc",
+                    "dst": "configs/rcs/.profile",
+                    "link": "~/.zprofile"
+                },
+                {
+                    "dst": "configs/rcs/.profile",
                     "link": "~/.profile"
                 },
                 {
-                    "dst": "configs/rcs/.logoutrc",
+                    "dst": "configs/rcs/.logout",
                     "link": "~/.zlogout"
                 },
                 {
