@@ -2,4 +2,4 @@
 # platform: linux
 
 patch:
-    style/horizontal: true     # 候选列表横排
+    style/horizontal: false     # 候选列表横排
