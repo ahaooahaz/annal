@@ -21,26 +21,13 @@ function include() {
 function proxy() {
     case $1 in
     on)
-        export no_proxy="localhost,127.0.0.1,localaddress,.localdomain.com"
-        export http_proxy="http://127.0.0.1:8123"
-        export https_proxy=$http_proxy
-        export ftp_proxy=$http_proxy
-        export rsync_proxy=$http_proxy
-        export HTTP_PROXY=$http_proxy
-        export HTTPS_PROXY=$http_proxy
-        export FTP_PROXY=$http_proxy
-        export RSYNC_PROXY=$http_proxy
+        export all_proxy="${custom_proxy}" no_proxy=127.0.0.1,localhost
+        export http_proxy=$all_proxy https_proxy=$all_proxy
     ;;
     off)
         unset no_proxy
         unset http_proxy
         unset https_proxy
-        unset ftp_proxy
-        unset rsync_proxy
-        unset HTTP_PROXY
-        unset HTTPS_PROXY
-        unset FTP_PROXY
-        unset RSYNC_PROXY
     ;;
     -h|--help)
         cat << EOF
