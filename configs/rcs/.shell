@@ -15,6 +15,8 @@ elif [[ "${CURRSHELL}" == "bash" ]]; then
     fi
 fi
 
+local CURROS=$(uname -s)
+
 include -f "${HOME}/.inti_shrc"
 
 #=====================#
@@ -54,6 +56,9 @@ if [[ "${CURRSHELL}" == "zsh" ]]; then
     bindkey -M viins -r '^D' # unbind <Ctrl-D> in viins mode.
     bindkey -M viins '^D' delete-char # bind <Ctrl-D> in viins mode, delete-char.
     bindkey -M viins '^Z' undo        # [Ctrl-Z]
+
+    bindkey -M viins '^?' backward-kill-word
+    bindkey -M viins '^H' backward-kill-word
 
     zcomet load zdharma-continuum/fast-syntax-highlighting
 
@@ -247,9 +252,12 @@ BEGIN{max=-1e10;min=1e10;sum=0;n=0}
 END{print "Max:", max, "Min:", min, "Mean:", (n>2)?(sum-min-max)/(n-2):sum/n}'\'
 
 alias clear='printf "\033[H\033[J"'
+if [[ "${CURROS}" == "Darwin" ]]; then
+    alias make='gmake'
+fi
 
 # completion.
-apps=(kubectl helm)
+apps=(kubectl helm jt)
 for app in ${apps}; do
     if [ $(type ${app} >/dev/null 2>&1; echo $?) -eq 0 ]; then
         source <(${app} completion ${CURRSHELL})
