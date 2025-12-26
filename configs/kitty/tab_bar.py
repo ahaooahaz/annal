@@ -1,8 +1,4 @@
 import datetime
-import json
-import subprocess
-from collections import defaultdict
-import http.client
 
 from kitty.boss import get_boss
 from kitty.fast_data_types import Screen, add_timer
@@ -17,6 +13,7 @@ from kitty.tab_bar import (
 )
 
 timer_id = None
+EN_MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
 
 def draw_tab(
     draw_data: DrawData,
@@ -75,8 +72,9 @@ def draw_right_status(draw_data: DrawData, screen: Screen) -> None:
 
 def create_cells() -> list[str]:
     now = datetime.datetime.now()
+    month = EN_MONTHS[now.month - 1]
     return [
-        now.strftime("%d %b"),
+        f"{now.day:02d} {month}",
         now.strftime("%H:%M"),
     ]
 
