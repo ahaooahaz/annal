@@ -48,6 +48,26 @@
             ]
         },
         {
+            "name": "kitty-kitten-search",
+            "repo": "trygveaa/kitty-kitten-search",
+            "links": [
+                {
+                    "dst": "plugins/kitty-kitten-search",
+                    "link": "~/.config/kitty/kitty_search"
+                }
+            ]
+        },
+        {
+            "name": "kitty_grab",
+            "repo": "yurikhan/kitty_grab",
+            "links": [
+                {
+                    "dst": "plugins/kitty_grab",
+                    "link": "~/.config/kitty/kitty_grab"
+                }
+            ]
+        },
+        {
             "name": "vim",
             "links": [
                 {

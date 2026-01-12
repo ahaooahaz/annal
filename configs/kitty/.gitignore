@@ -1,3 +1,5 @@
 /session.conf
 /current-theme.conf
 *.bak
+/kitty_search
+/kitty_grab
