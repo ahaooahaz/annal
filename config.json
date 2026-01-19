@@ -130,6 +130,15 @@
                     "link": "~/.local/scripts"
                 }
             ]
+        },
+        {
+            "name": "karabiner",
+            "links": [
+                {
+                    "dst": "configs/karabiner",
+                    "link": "~/.config/karabiner"
+                }
+            ]
         }
     ]
 }
