@@ -171,5 +171,5 @@ NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 if [[ "$(uname)" == "Darwin" ]]; then
-    export PATH="/opt/homebrew/bin:$PATH"
+    export PATH="/opt/homebrew/sbin:/opt/homebrew/bin:$PATH"
 fi
