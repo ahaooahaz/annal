@@ -11,16 +11,6 @@
             ]
         },
         {
-            "name": "jumpto",
-            "repo": "ahaooahaz/jumpto",
-            "links": [
-                {
-                    "dst": "plugins/jumpto/jt.sh",
-                    "link": "~/.local/bin/jt"
-                }
-            ]
-        },
-        {
             "name": "tmux",
             "repo": "gpakosz/.tmux",
             "links": [
