@@ -58,14 +58,11 @@
             ]
         },
         {
-            "name": "vim",
+            "name": "nvim",
+            "repo": "ahaooahaz/starter",
             "links": [
                 {
-                    "dst": "configs/rcs/.vimrc",
-                    "link": "~/.vimrc"
-                },
-                {
-                    "dst": "configs/nvim",
+                    "dst": "plugins/nvim",
                     "link": "~/.config/nvim"
                 }
             ]
