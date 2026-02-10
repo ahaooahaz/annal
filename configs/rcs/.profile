@@ -171,5 +171,9 @@ NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 if [[ "$(uname)" == "Darwin" ]]; then
+    export PYENV_ROOT="$HOME/.pyenv"
     export PATH="/opt/homebrew/sbin:/opt/homebrew/bin:$PATH"
+    [[ -d ${PYENV_ROOT}/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
+    include -f ${HOME}/.venv/bin/activate
 fi
+

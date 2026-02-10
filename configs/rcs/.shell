@@ -17,6 +17,8 @@ fi
 
 local CURROS=$(uname -s)
 
+
+eval "$(pyenv init - ${CURRSHELL})"
 include -f "${HOME}/.inti_shrc"
 
 #=====================#
@@ -272,3 +274,4 @@ for app in ${apps}; do
         source <(${app} --completion ${CURRSHELL})
     fi
 done
+
