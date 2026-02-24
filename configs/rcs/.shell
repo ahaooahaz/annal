@@ -6,7 +6,10 @@ esac
 
 CURRSHELL=$(ps -p $$ -o comm=)
 CURRSHELL=${CURRSHELL#-}
-CURRSHELL=$(basename "$CURRSHELL")
+export CURRSHELL=$(basename "$CURRSHELL")
+export CURROS=$(uname -s)
+
+# mask sure alway is login shell (activate ${HOME}/.profile).
 if [[ "${CURRSHELL}" == "zsh" ]]; then
     [[ -o login ]] || exec ${CURRSHELL} -l
 elif [[ "${CURRSHELL}" == "bash" ]]; then
@@ -14,9 +17,6 @@ elif [[ "${CURRSHELL}" == "bash" ]]; then
         exec ${CURRSHELL} -l
     fi
 fi
-
-local CURROS=$(uname -s)
-
 
 eval "$(pyenv init - ${CURRSHELL})"
 include -f "${HOME}/.inti_shrc"
@@ -27,7 +27,6 @@ include -f "${HOME}/.inti_shrc"
 hash -d config=$XDG_CONFIG_HOME
 hash -d cache=$XDG_CACHE_HOME
 hash -d data=$XDG_DATA_HOME
-hash -d zdot=$ZDOTDIR
 # fzf
 export FZF_DEFAULT_OPTS='--ansi --height=60% --reverse --cycle --bind=tab:accept'
 # bat
@@ -141,6 +140,7 @@ if [[ "${CURRSHELL}" == "zsh" ]]; then
 #   Zsh config end    #
 #=====================#
 elif [[ "${CURRSHELL}" == "bash" ]]; then
+    IGNOREEOF=999
 #=====================#
 #     Bash config     #
 #=====================#

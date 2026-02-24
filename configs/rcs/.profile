@@ -111,13 +111,6 @@ function add_to() {
     eval "export $envname=\"$current_val\""
 }
 
-source_if_exists () {
-    if test -r "$1"; then
-        echo "sourcing $1"
-        source "$1"
-    fi
-}
-
 #if [[ -z "$ANNAL_ENVRC_LOADED" ]]; then
 #  export ANNAL_ENVRC_LOADED=1
 #else
@@ -156,11 +149,9 @@ add_to PATH $HOME/.local/bin $HOME/.local/scripts $GOPATH/bin $HOME/.cargo/bin $
 ZGOPATH="$HOME/dev/go"
 if [[ -s "$HOME/.gvm/scripts/gvm" ]]; then
     source "$HOME/.gvm/scripts/gvm" && unset -f cd
-    set -a
     function gouse() {
         gvm use $1 --default
     }
-    set +a
 else
     export GOPATH=$ZGOPATH
     add_to PATH $HOME/.local/go/bin
@@ -170,10 +161,17 @@ fi
 NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
-if [[ "$(uname)" == "Darwin" ]]; then
+if [[ "${CURROS:-$(uname)}" == "Darwin" ]]; then
     export PYENV_ROOT="$HOME/.pyenv"
     export PATH="/opt/homebrew/sbin:/opt/homebrew/bin:$PATH"
     [[ -d ${PYENV_ROOT}/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
     include -f ${HOME}/.venv/bin/activate
 fi
 
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+if [[ "${CURRSHELL}" == "bash" ]]; then
+    source ${HOME}/.${CURRSHELL}rc
+fi
