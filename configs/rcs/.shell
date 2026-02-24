@@ -110,6 +110,7 @@ if [[ "${CURRSHELL}" == "zsh" ]]; then
     setopt pushd_minus           # exchange the meanings of `+` and `-` in pushd
     setopt ksh_option_print      # make `setopt` output all options
     setopt extended_glob         # extended globbing
+    setopt IGNORE_EOF
 
     # time (zsh built-in)
     TIMEFMT="\
