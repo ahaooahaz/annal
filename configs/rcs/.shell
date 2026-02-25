@@ -51,9 +51,8 @@ if [[ "${CURRSHELL}" == "zsh" ]]; then
     # Plugins
     include -f "${HOME}/.zcomet/zcomet.zsh"
     zcomet load jeffreytse/zsh-vi-mode
+    ZVM_SYSTEM_CLIPBOARD_ENABLED=true
 
-    # order: 1, default keymap.
-    zcomet load marlonrichert/zsh-edit
     # NOTE: custom bindkeys.
     bindkey -M vicmd -r '^D' # unbind <Ctrl-D> in vicmd mode.
     bindkey -M viins -r '^D' # unbind <Ctrl-D> in viins mode.
@@ -90,6 +89,9 @@ if [[ "${CURRSHELL}" == "zsh" ]]; then
     function after_init() {
         bindkey -M viins '^R' fzf_history_search
         bindkey -M vicmd '/' fzf_history_search
+        # unbind <C_s> for kitty leader key.
+        bindkey -M vicmd -r '^S'
+        bindkey -M viins -r '^S'
     }
     zvm_after_init_commands+=(after_init)
 
