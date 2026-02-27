@@ -30,7 +30,33 @@ hash -d config=$XDG_CONFIG_HOME
 hash -d cache=$XDG_CACHE_HOME
 hash -d data=$XDG_DATA_HOME
 # fzf
-export FZF_DEFAULT_OPTS='--ansi --height=60% --reverse --cycle --bind=tab:accept'
+export FZF_DEFAULT_OPTS="
+--color=dark
+--color=fg:#707a8c,bg:-1,hl:#3e9831,fg+:#cbccc6,bg+:#434c5e,hl+:#5fff87
+--color=info:#af87ff,prompt:#5fff87,pointer:#ff87d7,marker:#ff87d7,spinner:#ff87d7
+--height 60%
+--layout reverse
+--sort
+--preview '(highlight -O ansi -l {} 2> /dev/null || cat {} || tree -N -C {}) 2> /dev/null | head -500'
+--preview-window right:50%:wrap
+--bind '?:toggle-preview'
+--border
+--cycle
+"
+export FZF_CTRL_T_COMMAND=$FZF_DEFAULT_COMMAND
+export FZF_CTRL_T_OPTS=$FZF_DEFAULT_OPTS
+export FZF_CTRL_R_OPTS="
+--layout=reverse
+--sort
+--exact
+--preview 'echo {}'
+--preview-window down:3:hidden:wrap
+--bind '?:toggle-preview'
+--border
+--cycle
+--bind=tab:down
+--bind=btab:up
+"
 # bat
 export BAT_THEME='OneHalfDark'
 # man
@@ -44,7 +70,6 @@ if [[ "${CURRSHELL}" == "zsh" ]]; then
 #=====================#
 #     Zsh config      #
 #=====================#
-
     # P10k Instant Prompt
     include -f "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 
@@ -84,14 +109,14 @@ if [[ "${CURRSHELL}" == "zsh" ]]; then
 
     zcomet load romkatv/powerlevel10k
     zcomet load trapd00r/LS_COLORS
-    zcomet load joshskidmore/zsh-fzf-history-search
     # see issue: https://github.com/jeffreytse/zsh-vi-mode/issues/4
     function after_init() {
-        bindkey -M viins '^R' fzf_history_search
-        bindkey -M vicmd '/' fzf_history_search
         # unbind <C_s> for kitty leader key.
         bindkey -M vicmd -r '^S'
         bindkey -M viins -r '^S'
+        if test fzf; then
+          source <(fzf --zsh)
+        fi
     }
     zvm_after_init_commands+=(after_init)
 
@@ -101,7 +126,11 @@ if [[ "${CURRSHELL}" == "zsh" ]]; then
     zcomet load Aloxaf/fzf-tab
     zstyle ':fzf-tab:*' fzf-opts '--height 40% --layout=reverse --inline-info --ignore-case --extended'
     zstyle ':fzf-tab:*' fzf-bindings-default 'tab:down,btab:up,change:top,ctrl-space:toggle,bspace:backward-delete-char,ctrl-h:backward-delete-char'
-    zstyle ':fzf-tab:complete:kill:argument-rest' fzf-preview 'ps --pid=$word -o cmd --no-headers -w -w'
+    if [[ "${CURROS}" == "Linux" ]]; then
+      zstyle ':fzf-tab:complete:kill:argument-rest' fzf-preview 'ps --pid=$word -o cmd --no-headers -w'
+    else
+      zstyle ':fzf-tab:complete:kill:argument-rest' fzf-preview 'ps -p $word -o command= -ww'
+    fi
     zstyle ':fzf-tab:complete:kill:argument-rest' fzf-flags '--preview-window=down:3:wrap'
     zstyle ':fzf-tab:complete:kill:*' popup-pad 0 3
     zstyle ':completion:*:__zoxide_z:*' sort false
