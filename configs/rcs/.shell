@@ -18,8 +18,8 @@ elif [[ "${CURRSHELL}" == "bash" ]]; then
     fi
 fi
 
-if [[ "${CURROS}" == "Darwin" ]]; then
-    eval "$(pyenv init - ${CURRSHELL})"
+if test pyenv; then
+  eval "$(pyenv init - ${CURRSHELL})"
 fi
 include -f "${HOME}/.inti_shrc"
 
