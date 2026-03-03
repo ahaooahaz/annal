@@ -109,6 +109,7 @@ if [[ "${CURRSHELL}" == "zsh" ]]; then
     zcomet load trapd00r/LS_COLORS
     # see issue: https://github.com/jeffreytse/zsh-vi-mode/issues/4
     function after_init() {
+        zcomet load hlissner/zsh-autopair
         # unbind <C_s> for kitty leader key.
         bindkey -M vicmd -r '^S'
         bindkey -M viins -r '^S'
