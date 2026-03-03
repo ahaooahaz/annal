@@ -18,9 +18,7 @@ elif [[ "${CURRSHELL}" == "bash" ]]; then
     fi
 fi
 
-if test pyenv; then
-  eval "$(pyenv init - ${CURRSHELL})"
-fi
+include -f "${HOME}/.venv/bin/activate"
 include -f "${HOME}/.inti_shrc"
 
 #=====================#

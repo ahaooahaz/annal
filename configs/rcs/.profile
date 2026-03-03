@@ -165,10 +165,6 @@ if [[ "${CURROS:-$(uname)}" == "Darwin" ]]; then
     export PATH="/opt/homebrew/sbin:/opt/homebrew/bin:$PATH"
 fi
 
-export PYENV_ROOT="$HOME/.pyenv"
-[[ -d ${PYENV_ROOT}/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"
-include -f ${HOME}/.venv/bin/activate
-
 case $- in
     *i*) ;;
       *) return;;
