@@ -85,9 +85,6 @@ if [[ "${CURRSHELL}" == "zsh" ]]; then
     bindkey -M viins '^D' delete-char # bind <Ctrl-D> in viins mode, delete-char.
     bindkey -M viins '^Z' undo        # [Ctrl-Z]
 
-    bindkey -M viins '^?' backward-kill-word
-    bindkey -M viins '^H' backward-kill-word
-
     zcomet load zdharma-continuum/fast-syntax-highlighting
 
     zcomet load ohmyzsh lib {completion,clipboard}.zsh
@@ -106,13 +103,14 @@ if [[ "${CURRSHELL}" == "zsh" ]]; then
 
     zcomet load ohmyzsh plugins/git
     zcomet load tj/git-extras etc git-extras-completion.zsh
+    export AUTOPAIR_INIT_INHIBIT=1
     zcomet load hlissner/zsh-autopair
 
     zcomet load romkatv/powerlevel10k
     zcomet load trapd00r/LS_COLORS
     # see issue: https://github.com/jeffreytse/zsh-vi-mode/issues/4
     function after_init() {
-        zcomet load hlissner/zsh-autopair
+        autopair-init
         # unbind <C_s> for kitty leader key.
         bindkey -M vicmd -r '^S'
         bindkey -M viins -r '^S'
