@@ -1,8 +1,8 @@
 [include]
-  path = ~/.gitconfig-default
+  path = ~/.gitconfig.d/user.default
 
 [includeIf "gitdir:~/dev/proj/"]
-  path = ~/.gitconfig-work
+  path = ~/.gitconfig.d/user.work
 
 [filter "lfs"]
 	smudge = git-lfs smudge -- %f

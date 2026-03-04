@@ -135,12 +135,8 @@
                     "link": "~/.gitconfig"
                 },
                 {
-                    "dst": "configs/git/.gitconfig-default",
-                    "link": "~/.gitconfig-default"
-                },
-                {
-                    "dst": "configs/git/.gitconfig",
-                    "link": "~/.gitconfig-work"
+                    "dst": "configs/git/.gitconfig.d",
+                    "link": "~/.gitconfig.d"
                 }
             ]
         }
