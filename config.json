@@ -126,6 +126,23 @@
                     "link": "~/.config/karabiner"
                 }
             ]
+        },
+        {
+            "name": "git",
+            "links": [
+                {
+                    "dst": "configs/git/.gitconfig",
+                    "link": "~/.gitconfig"
+                },
+                {
+                    "dst": "configs/git/.gitconfig-default",
+                    "link": "~/.gitconfig-default"
+                },
+                {
+                    "dst": "configs/git/.gitconfig",
+                    "link": "~/.gitconfig-work"
+                }
+            ]
         }
     ]
 }

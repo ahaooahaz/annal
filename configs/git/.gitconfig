@@ -1,0 +1,34 @@
+[include]
+  path = ~/.gitconfig-default
+
+[includeIf "gitdir:~/dev/proj/"]
+  path = ~/.gitconfig-work
+
+[filter "lfs"]
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+	clean = git-lfs clean -- %f
+[core]
+    pager = delta
+
+[interactive]
+    diffFilter = delta --color-only
+
+[delta]
+    side-by-side = true
+    navigate = true
+    dark = true
+
+[merge]
+    conflictStyle = zdiff3
+
+[diff]
+    tool = meld
+
+[difftool]
+    prompt = false
+
+[difftool "meld"]
+    cmd = meld "$LOCAL" "$REMOTE"
+
