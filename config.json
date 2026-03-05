@@ -95,7 +95,7 @@
                     "link": "~/.zlogout"
                 },
                 {
-                    "dst": "configs/rcs/.logoutrc",
+                    "dst": "configs/rcs/.logout",
                     "link": "~/.bash_logout"
                 }
             ]
