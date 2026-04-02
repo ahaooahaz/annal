@@ -133,11 +133,22 @@ export LUA_PATH="$LUA_LOCAL_PATH/share/lua/5.1/?.lua;$LUA_LOCAL_PATH/share/lua/5
 export GIT_EDITOR=nvim
 export EDITOR=nvim
 export VISUAL=nvim
-export INPUT_METHOD=ibus
-export GLFW_IM_MODULE=ibus
-export GTK_IM_MODULE=ibus
-export XMODIFIERS=@im=ibus
-export QT_IM_MODULE=ibus
+
+if [[ -n "$XDG_SESSION_TYPE" && "$XDG_SESSION_TYPE" != "tty" ]]; then
+    if [[ "$XDG_CURRENT_DESKTOP" == "KDE" ]]; then
+        export INPUT_METHOD=fcitx
+        export GLFW_IM_MODULE=fcitx
+        export GTK_IM_MODULE=fcitx
+        export XMODIFIERS=@im=fcitx
+        export QT_IM_MODULE=fcitx
+    else
+        export INPUT_METHOD=ibus
+        export GLFW_IM_MODULE=ibus
+        export GTK_IM_MODULE=ibus
+        export XMODIFIERS=@im=ibus
+        export QT_IM_MODULE=ibus
+    fi
+fi
 
 # private env.
 include -f ${HOME}/.inti_envrc

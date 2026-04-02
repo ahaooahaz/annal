@@ -1,14 +1,14 @@
 [include]
-  path = ~/.gitconfig.d/user.default
+    path = ~/.gitconfig.d/user.default
 
 [includeIf "gitdir:~/dev/proj/"]
-  path = ~/.gitconfig.d/user.work
+    path = ~/.gitconfig.d/user.work
 
 [filter "lfs"]
-	smudge = git-lfs smudge -- %f
-	process = git-lfs filter-process
-	required = true
-	clean = git-lfs clean -- %f
+    smudge = git-lfs smudge -- %f
+    process = git-lfs filter-process
+    required = true
+    clean = git-lfs clean -- %f
 [core]
     pager = delta
 
@@ -31,4 +31,3 @@
 
 [difftool "meld"]
     cmd = meld "$LOCAL" "$REMOTE"
-
