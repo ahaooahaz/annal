@@ -174,7 +174,11 @@ NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 if [[ "${CURROS:-$(uname)}" == "Darwin" ]]; then
-    export PATH="/opt/homebrew/sbin:/opt/homebrew/bin:$PATH"
+    add_to PATH "/opt/homebrew/sbin" "/opt/homebrew/bin"
+fi
+
+if [[ -d "$HOME/.local/share/bob" ]]; then
+    add_to PATH "$HOME/.local/share/bob/nvim-bin"
 fi
 
 case $- in

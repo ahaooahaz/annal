@@ -265,9 +265,11 @@ alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 
-alias v=nvim
-alias vi=nvim
-alias vim=nvim
+if command -v nvim &>/dev/null; then
+    alias v=nvim
+    alias vi=nvim
+    alias vim=nvim
+fi
 alias say=spd-say
 alias t=tmux
 
@@ -311,4 +313,3 @@ for app in ${apps}; do
         source <(${app} --completion ${CURRSHELL})
     fi
 done
-
