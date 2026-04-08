@@ -139,6 +139,15 @@
                     "link": "~/.gitconfig.d"
                 }
             ]
+        },
+        {
+            "name": "i3",
+            "links": [
+                {
+                    "dst": "configs/i3",
+                    "link": "~/.config/i3"
+                }
+            ]
         }
     ]
 }
