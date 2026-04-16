@@ -35,7 +35,17 @@ export FZF_DEFAULT_OPTS="
 --height 60%
 --layout reverse
 --sort
---preview '(highlight -O ansi -l {} 2> /dev/null || cat {} || tree -N -C {}) 2> /dev/null | head -500'
+--preview '
+if [ -d {} ]; then
+    tree -N -C {} | head -500
+elif file --mime {} | grep -q image; then
+    viu -w \${FZF_PREVIEW_COLUMNS} {}
+else
+    bat --style=numbers --color=always {} 2>/dev/null \
+    || highlight -O ansi -l {} 2>/dev/null \
+    || cat {} | head -500
+fi
+'
 --preview-window right:50%:wrap
 --bind '?:toggle-preview'
 --border
@@ -48,7 +58,7 @@ export FZF_CTRL_R_OPTS="
 --sort
 --exact
 --preview 'echo {}'
---preview-window down:3:hidden:wrap
+--preview-window down:3:wrap
 --bind '?:toggle-preview'
 --border
 --cycle
@@ -133,6 +143,17 @@ if [[ "${CURRSHELL}" == "zsh" ]]; then
     fi
     zstyle ':fzf-tab:complete:kill:argument-rest' fzf-flags '--preview-window=down:3:wrap'
     zstyle ':fzf-tab:complete:kill:*' popup-pad 0 3
+    zstyle ':fzf-tab:complete:ls:*' fzf-preview '
+if [ -d $realpath ]; then
+    tree -N -C $realpath | head -500
+elif file --mime $realpath | grep -q image; then
+    viu -w 40 $realpath
+else
+    bat --style=numbers --color=always $realpath 2>/dev/null \
+    || highlight -O ansi -l $realpath 2>/dev/null \
+    || cat $realpath | head -500
+fi
+'
     zstyle ':completion:*:__zoxide_z:*' sort false
 
     # Configs
