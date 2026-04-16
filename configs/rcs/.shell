@@ -39,7 +39,7 @@ export FZF_DEFAULT_OPTS="
 if [ -d {} ]; then
     tree -N -C {} | head -500
 elif file --mime {} | grep -q image; then
-    viu -w \${FZF_PREVIEW_COLUMNS} {}
+    mcat {} --ascii
 else
     bat --style=numbers --color=always {} 2>/dev/null \
     || highlight -O ansi -l {} 2>/dev/null \
@@ -147,7 +147,7 @@ if [[ "${CURRSHELL}" == "zsh" ]]; then
 if [ -d $realpath ]; then
     tree -N -C $realpath | head -500
 elif file --mime $realpath | grep -q image; then
-    viu -w 40 $realpath
+    mcat $realpath --ascii
 else
     bat --style=numbers --color=always $realpath 2>/dev/null \
     || highlight -O ansi -l $realpath 2>/dev/null \
