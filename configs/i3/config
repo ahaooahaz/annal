@@ -56,10 +56,10 @@ bindsym $mod+d exec rofi -show drun
 # bindcode $mod+40 exec --no-startup-id i3-dmenu-desktop
 
 # change focus
-bindsym $mod+j focus left
-bindsym $mod+k focus down
-bindsym $mod+l focus up
-bindsym $mod+semicolon focus right
+# bindsym $mod+j focus left
+# bindsym $mod+k focus down
+# bindsym $mod+l focus up
+# bindsym $mod+semicolon focus right
 
 # alternatively, you can use the cursor keys:
 bindsym $mod+Left focus left
@@ -80,10 +80,10 @@ bindsym $mod+Shift+Up move up
 bindsym $mod+Shift+Right move right
 
 # split in horizontal orientation
-bindsym $mod+h split h
+# bindsym $mod+h split h
 
 # split in vertical orientation
-bindsym $mod+v split v
+# bindsym $mod+v split v
 
 # enter fullscreen mode for the focused container
 bindsym $mod+f fullscreen toggle
@@ -184,4 +184,12 @@ bar {
 for_window [class="Deskflow"] move scratchpad
 exec --no-startup-id flatpak run org.deskflow.deskflow
 exec_always --no-startup-id feh --randomize --bg-scale ~/Pictures/wallpapers/*
-exec_always --no-startup-id xset r rate 200 50
+exec_always --no-startup-id xset r rate 300 30
+exec_always --no-startup-id ibus-daemon -drx
+
+bindsym $mod+h move scratchpad
+bindsym $mod+Shift+h scratchpad show
+bindsym $mod+l exec --no-startup-id sh -c "i3lock && sleep 0.5 && xset dpms force off"
+bindsym Control+Tab workspace next
+bindsym Control+Shift+Tab workspace prev
+bindsym Mod1+Tab exec rofi -show window
