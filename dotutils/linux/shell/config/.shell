@@ -85,7 +85,10 @@ if [[ "${CURRSHELL}" == "zsh" ]]; then
     include -f "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 
     # Plugins
-    include -f "${HOME}/.zcomet/zcomet.zsh"
+    if [[ ! -f ${ZDOTDIR:-${HOME}}/.zcomet/bin/zcomet.zsh ]]; then
+        command git clone https://github.com/agkozak/zcomet.git ${ZDOTDIR:-${HOME}}/.zcomet/bin
+    fi
+    include -f "${HOME}/.zcomet/bin/zcomet.zsh"
     zcomet load jeffreytse/zsh-vi-mode
     ZVM_SYSTEM_CLIPBOARD_ENABLED=true
 
