@@ -4,7 +4,7 @@ MK_DIR := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 install:
 	mkdir -p ~/.ssh
 	-mv ~/.ssh/config ~/.ssh/config.backup.$$(date +%s)
-	ln -s $(MK_DIR)/config ~/.ssh/config
+	ln -s $(MK_DIR)/config/config ~/.ssh/config
 
 uninstall: prune
 	-rm -f ~/.ssh/config
