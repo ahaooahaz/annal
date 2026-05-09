@@ -1,0 +1,62 @@
+name: Shell Format
+
+on:
+  push:
+    paths:
+      - 'dotutils/linux/shell/**'
+      - '.github/workflows/shell-format.yml'
+  pull_request:
+    paths:
+      - 'dotutils/linux/shell/**'
+      - '.github/workflows/shell-format.yml'
+
+jobs:
+  shfmt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Install latest shfmt
+        run: go install mvdan.cc/sh/v3/cmd/shfmt@latest
+
+      - name: Add Go bin to PATH
+        run: echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Format shell files
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -d '' files < <(
+            find dotutils/linux/shell -type f \(
+              -name '*.sh' -o \
+              -name '*.bash' -o \
+              -name '*.zsh'
+            \) -print0
+          )
+
+          while IFS= read -r -d '' file; do
+            if head -n 1 "$file" | grep -Eq '^#!.*\b(sh|bash|zsh)\b'; then
+              files+=("$file")
+            fi
+          done < <(find dotutils/linux/shell -type f -print0)
+
+          if ((${#files[@]} == 0)); then
+            echo 'No shell files found under dotutils/linux/shell'
+            exit 0
+          fi
+
+          printf '%s\0' "${files[@]}" | sort -zu | xargs -0 shfmt -w
+
+      - name: Fail if formatting changed files
+        run: |
+          git diff --exit-code -- dotutils/linux/shell || {
+            echo 'Shell files under dotutils/linux/shell are not formatted. Run shfmt and commit the result.'
+            exit 1
+          }

@@ -8,28 +8,19 @@ install:
 	-mv ~/.zprofile ~/.zprofile.backup.$$(date +%s)
 	-mv ~/.zlogout ~/.zlogout.backup.$$(date +%s)
 	-mv ~/.bash_logout ~/.bash_logout.backup.$$(date +%s)
-	ln -s $(MK_DIR)/config/.profile ~/.profile
-	ln -s $(MK_DIR)/config/.profile ~/.zprofile
-	ln -s $(MK_DIR)/config/.shell ~/.bashrc
-	ln -s $(MK_DIR)/config/.shell ~/.zshrc
-	ln -s $(MK_DIR)/config/.logout ~/.zlogout
-	ln -s $(MK_DIR)/config/.logout ~/.bash_logout
+	-mv ~/.shell ~/.shell.backup.$$(date +%s)
+	ln -s $(MK_DIR)/config ~/.shell
+	echo "source ~/.shell/setup.sh" > ~/.zshrc
+	echo "source ~/.shell/setup.sh" > ~/.bashrc
+	echo "source ~/.shell/logout.sh" > ~/.bash_logout
+	echo "source ~/.shell/logout.sh" > ~/.zlogout
 
 
 uninstall: prune
-	-rm -f ~/.profile
-	-rm -f ~/.zprofile
-	-rm -f ~/.bashrc
-	-rm -f ~/.zshrc
-	-rm -f ~/.zlogout
-	-rm -f ~/.bash_logout
+	-rm -rf ~/.shell
+
 upgrade:
 	echo "No upgrade steps for shell plugin."
 
 prune:
-	-rm -f ~/.profile.backup.*
-	-rm -f ~/.zprofile.backup.*
-	-rm -f ~/.bashrc.backup.*
-	-rm -f ~/.zshrc.backup.*
-	-rm -f ~/.zlogout.backup.*
-	-rm -f ~/.bash_logout.backup.*
+	-rm -rf ~/.shell.backup.*
