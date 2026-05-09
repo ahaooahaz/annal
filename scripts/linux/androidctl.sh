@@ -34,8 +34,9 @@ function parse() {
     done
 }
 
-
+# shellcheck disable=SC2329
 function get_cpu_freq() {
+    # shellcheck disable=SC2016
     ${adbopt} exec-out '
         cpu_count=`cat /sys/devices/system/cpu/present`
         cpu_count=${cpu_count//"0-"/}
@@ -58,7 +59,9 @@ max_freq($cpuinfo_max_freq/$scaling_max_freq)"
 '
 }
 
+# shellcheck disable=SC2329
 function set_cpu_freq() {
+    # shellcheck disable=SC2016
     ${adbopt} exec-out '
         cpu_count=`cat /sys/devices/system/cpu/present`
         cpu_count=${cpu_count//"0-"/}
@@ -83,7 +86,7 @@ fi
 
 subcommand=(get_cpu_freq set_cpu_freq)
 for i in "${subcommand[@]}"; do
-    if [ $1 == $i ]; then
+    if [ "$1" == "$i" ]; then
         command="$1"
         shift
         parse "$@"
