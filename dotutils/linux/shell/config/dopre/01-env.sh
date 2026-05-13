@@ -35,7 +35,7 @@ fi
 include -f ${HOME}/.inti_envrc
 
 # runtime env.
-add_to PATH $HOME/.local/bin $HOME/.local/scripts $GOPATH/bin $HOME/.cargo/bin $HOME/.local/cmake/bin
+add_to PATH /usr/local/bin $HOME/.local/bin $HOME/.local/scripts $GOPATH/bin $HOME/.cargo/bin $HOME/.local/cmake/bin
 # language env.
 # Golang env.
 ZGOPATH="$HOME/dev/go"
