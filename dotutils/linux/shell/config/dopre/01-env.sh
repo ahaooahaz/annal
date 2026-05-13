@@ -2,6 +2,8 @@ export CURROS=$(uname -s)
 export XDG_CONFIG_HOME=~/.config
 export XDG_CACHE_HOME=~/.cache
 export XDG_DATA_HOME=~/.local/share
+export HISTSIZE=10000  # number of commands that are loaded
+export SAVEHIST=10000  # number of commands that are stored
 
 # Lua env.
 export LUA_LOCAL_PATH=$HOME/.luarocks

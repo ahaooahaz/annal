@@ -102,11 +102,13 @@ TIMEFMT="\
     other page faults:         %R"
 
 # zsh history
+export HISTFILE=~/.zsh_history
 setopt hist_ignore_all_dups # no duplicates
 setopt hist_save_no_dups    # don't save duplicates
 setopt hist_ignore_space    # no commands starting with space
 setopt hist_reduce_blanks   # remove all unneccesary spaces
 setopt share_history        # share history between sessions
+setopt EXTENDED_HISTORY
 
 autoload -Uz colors && colors # provide color variables (see `which colors`)
 

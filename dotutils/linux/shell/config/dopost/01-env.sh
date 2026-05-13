@@ -45,11 +45,7 @@ export FZF_CTRL_R_OPTS="
 # bat
 export BAT_THEME='OneHalfDark'
 # man
-export HISTFILE=~/.${CURRSHELL}_history
-export HISTSIZE=1000000  # number of commands that are loaded
-export SAVEHIST=1000000  # number of commands that are stored
 # mcat
 # NOTE: if terminal is not `kitty` need to change it.
 export MCAT_ENCODER=kitty
-
 export GPG_TTY=$(tty)
