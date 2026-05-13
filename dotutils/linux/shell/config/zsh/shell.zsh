@@ -8,7 +8,7 @@ include -f "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 
 # Plugins
 if [[ ! -f ${ZDOTDIR:-${HOME}}/.zcomet/bin/zcomet.zsh ]]; then
-    command git clone https://github.com/agkozak/zcomet.git ${ZDOTDIR:-${HOME}}/.zcomet/bin
+	command git clone https://github.com/agkozak/zcomet.git ${ZDOTDIR:-${HOME}}/.zcomet/bin
 fi
 include -f "${HOME}/.zcomet/bin/zcomet.zsh"
 zcomet load jeffreytse/zsh-vi-mode
@@ -32,8 +32,8 @@ bindkey '^[[B' history-substring-search-down
 HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=1
 zcomet load ohmyzsh plugins/zoxide # NOTE: need install zoxide first.
 __zoxide_z_complete() {
-    args=$(zoxide query -l)
-    _arguments "1:profiles:($args)"
+	args=$(zoxide query -l)
+	_arguments "1:profiles:($args)"
 }
 
 zcomet load ohmyzsh plugins/git
@@ -45,13 +45,13 @@ zcomet load romkatv/powerlevel10k
 zcomet load trapd00r/LS_COLORS
 # see issue: https://github.com/jeffreytse/zsh-vi-mode/issues/4
 function after_init() {
-    autopair-init
-    # unbind <C_s> for kitty leader key.
-    bindkey -M vicmd -r '^S'
-    bindkey -M viins -r '^S'
-    if test fzf; then
-        source <(fzf --zsh)
-    fi
+	autopair-init
+	# unbind <C_s> for kitty leader key.
+	bindkey -M vicmd -r '^S'
+	bindkey -M viins -r '^S'
+	if test fzf; then
+		source <(fzf --zsh)
+	fi
 }
 zvm_after_init_commands+=(after_init)
 
@@ -62,9 +62,9 @@ zcomet load Aloxaf/fzf-tab
 zstyle ':fzf-tab:*' fzf-opts '--height 40% --layout=reverse --inline-info --ignore-case --extended'
 zstyle ':fzf-tab:*' fzf-bindings-default 'tab:down,btab:up,change:top,ctrl-space:toggle,bspace:backward-delete-char,ctrl-h:backward-delete-char'
 if [[ "${CURROS}" == "Linux" ]]; then
-    zstyle ':fzf-tab:complete:kill:argument-rest' fzf-preview 'ps --pid=$word -o cmd --no-headers -w'
+	zstyle ':fzf-tab:complete:kill:argument-rest' fzf-preview 'ps --pid=$word -o cmd --no-headers -w'
 else
-    zstyle ':fzf-tab:complete:kill:argument-rest' fzf-preview 'ps -p $word -o command= -ww'
+	zstyle ':fzf-tab:complete:kill:argument-rest' fzf-preview 'ps -p $word -o command= -ww'
 fi
 zstyle ':fzf-tab:complete:kill:argument-rest' fzf-flags '--preview-window=down:3:wrap'
 zstyle ':fzf-tab:complete:kill:*' popup-pad 0 3
