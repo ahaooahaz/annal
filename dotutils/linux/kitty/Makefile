@@ -3,7 +3,7 @@ MK_DIR := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 PLUGINS := \
 	trygveaa/kitty-kitten-search \
 	yurikhan/kitty_grab
-include $(MK_DIR)/../common.mk
+include $(MK_DIR)/../../../mk/common.mk
 
 install: download_plugins
 	-mv ~/.config/kitty ~/.config/kitty.backup.$$(date +%s)

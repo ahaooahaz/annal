@@ -2,7 +2,7 @@ SHELL := /bin/bash
 MK_DIR := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 PLUGINS := \
 	gpakosz/.tmux
-include $(MK_DIR)/../common.mk
+include $(MK_DIR)/../../../mk/common.mk
 
 install: download_plugins
 	-mv ~/.tmux.conf.local ~/.tmux.conf.local.backup.$$(date +%s)

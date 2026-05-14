@@ -2,7 +2,7 @@ SHELL := /bin/bash
 MK_DIR := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 PLUGINS := \
 	iDvel/rime-ice
-include $(MK_DIR)/../common.mk
+include $(MK_DIR)/../../../mk/common.mk
 OS := $(shell uname -s)
 
 ifeq ($(UNAME_S),Linux)
