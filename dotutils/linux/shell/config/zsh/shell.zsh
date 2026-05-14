@@ -22,7 +22,7 @@ bindkey -M viins '^Z' undo        # [Ctrl-Z]
 
 zcomet load zdharma-continuum/fast-syntax-highlighting
 
-zcomet load ohmyzsh lib {completion,clipboard}.zsh
+zcomet load ohmyzsh lib {completion,clipboard,git}.zsh
 #zcomet load ohmyzsh plugins/autojump
 #zcomet load ohmyzsh plugins/z
 zcomet load ohmyzsh plugins/history
