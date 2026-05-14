@@ -2,7 +2,6 @@
 #=====================#
 #     Zsh config      #
 #=====================#
-setopt nullglob
 # P10k Instant Prompt
 include -f "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 
@@ -27,8 +26,6 @@ zcomet load ohmyzsh lib {completion,clipboard,git}.zsh
 #zcomet load ohmyzsh plugins/z
 zcomet load ohmyzsh plugins/history
 zcomet load ohmyzsh plugins/history-substring-search
-bindkey '^[[A' history-substring-search-up
-bindkey '^[[B' history-substring-search-down
 HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=1
 zcomet load ohmyzsh plugins/zoxide # NOTE: need install zoxide first.
 __zoxide_z_complete() {
@@ -43,12 +40,15 @@ zcomet load hlissner/zsh-autopair
 
 zcomet load romkatv/powerlevel10k
 zcomet load trapd00r/LS_COLORS
+
 # see issue: https://github.com/jeffreytse/zsh-vi-mode/issues/4
 function after_init() {
     autopair-init
     # unbind <C_s> for kitty leader key.
     bindkey -M vicmd -r '^S'
     bindkey -M viins -r '^S'
+    bindkey '^[[A' history-substring-search-up
+    bindkey '^[[B' history-substring-search-down
     if test fzf; then
         source <(fzf --zsh)
     fi
@@ -115,6 +115,8 @@ autoload -Uz colors && colors # provide color variables (see `which colors`)
 # fix echo <fe0f> chars when rime input a emoji
 # Ref: https://github.com/rime/rime-emoji/issues/8
 setopt COMBINING_CHARS
+
+setopt nullglob
 
 include -f "${ZDOTDIR:-${HOME}}/.p10k.zsh"
 
