@@ -48,4 +48,4 @@ export BAT_THEME='OneHalfDark'
 # mcat
 # NOTE: if terminal is not `kitty` need to change it.
 export MCAT_ENCODER=kitty
-export GPG_TTY=$(tty)
+export GPG_TTY=$TTY
