@@ -3,8 +3,8 @@
 #@/db_name	custom_phrase.txt
 #@/db_type	tabledb
 
-张昊	zh	zhanghao
-张昊	ah	ahow
+张昊	zh	1000
+张昊	ah	1000
 
 有	u	3
 又	u	2
@@ -41,3 +41,4 @@ gone	gone
 Go程	gocheng
 code	code
 SOHO	soho
+
