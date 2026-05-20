@@ -117,6 +117,7 @@ autoload -Uz colors && colors # provide color variables (see `which colors`)
 setopt COMBINING_CHARS
 
 setopt nullglob
+export GPG_TTY=$TTY
 
 include -f "${ZDOTDIR:-${HOME}}/.p10k.zsh"
 
