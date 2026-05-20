@@ -24,4 +24,3 @@ BEGIN{max=-1e10;min=1e10;sum=0;n=0}
 END{print "Max:", max, "Min:", min, "Mean:", (n>2)?(sum-min-max)/(n-2):sum/n}'\'
 
 alias clear='printf "\033[H\033[J"'
-

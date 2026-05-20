@@ -76,4 +76,3 @@ fi
 
 export HISTFILE=~/.bash_history
 export GPG_TTY=$(tty)
-
