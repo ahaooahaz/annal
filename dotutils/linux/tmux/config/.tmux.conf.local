@@ -408,10 +408,13 @@ bind -r ^j resizep -D 5
 bind -r ^h resizep -L 5
 bind -r ^l resizep -R 5
 
-# 复制粘贴相关键重定向
+# 选中复制
 bind -T copy-mode MouseDragEnd1Pane send-keys -X copy-pipe 'xclip'
-bind-key -T edit-mode-vi Up send-keys -X history-up
-bind-key -T edit-mode-vi Down send-keys -X history-down
+
+#bind-key -T edit-mode-vi Up send-keys -X history-up
+#bind-key -T edit-mode-vi Down send-keys -X history-down
+
+# visual模式下复制
 unbind-key -T copy-mode-vi Space ; bind-key -T copy-mode-vi v send-keys -X begin-selection
 unbind-key -T copy-mode-vi Enter ; bind-key -T copy-mode-vi y send-keys -X copy-pipe-and-cancel "reattach-to-user-namespace pbcopy"
 unbind p ; bind-key p paste-buffer
@@ -433,6 +436,11 @@ bind-key -n C-S-Right swap-window -t +1\; select-window -t +1
 # move status line to top
 #set -g status-position top
 #
+
+# 使用 prefix+Space 进入copy模式
+unbind [ #!important
+unbind Space #!important
+bind Space copy-mode #!important
 
 # set default shell
 set -g default-command /bin/zsh
