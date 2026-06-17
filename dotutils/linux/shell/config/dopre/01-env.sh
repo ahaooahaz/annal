@@ -55,6 +55,7 @@ NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s
 
 if [[ "${CURROS:-$(uname -s)}" == "Darwin" ]]; then
     add_to PATH "/opt/homebrew/sbin" "/opt/homebrew/bin"
+    add_to DYLD_FALLBACK_LIBRARY_PATH "/opt/homebrew/lib"
 fi
 
 if [[ -d "$HOME/.local/share/bob" ]]; then
