@@ -16,7 +16,9 @@ install: download_plugins
 	if [[ "$(OS)" == "Linux" ]]; then \
 		mv ~/.config/ibus/rime ~/.config/ibus/rime.backup.$(date +%Y%m%d%H%M%S) 2>/dev/null || true; \
 		mv ~/.local/share/fcitx5/rime ~/.local/share/fcitx5/rime.backup.$(date +%Y%m%d%H%M%S) 2>/dev/null || true; \
+		mkdir -p ~/.config/ibus/; \
 		ln -sf $(MK_DIR)/plugins/rime-ice ~/.config/ibus/rime; \
+		mkdir -p ~/.local/share/fcitx5/; \
 		ln -sf $(MK_DIR)/plugins/rime-ice ~/.local/share/fcitx5/rime; \
 	else \
 		mv ~/Library/Rime ~/Library/Rime.backup.$(date +%Y%m%d%H%M%S) 2>/dev/null || true; \
@@ -28,6 +30,6 @@ uninstall: prune
 upgrade: upgrade_plugins
 
 prune:
-	rm -rf ~/.config/ibus/rime.backup.*
-	rm -rf ~/.local/share/fcitx5/rime.backup.*
-	rm -rf ~/Library/Rime.backup.*
+	-rm -rf ~/.config/ibus/rime.backup.*
+	-rm -rf ~/.local/share/fcitx5/rime.backup.*
+	-rm -rf ~/Library/Rime.backup.*
