@@ -521,3 +521,4 @@ set -g terminal-overrides 'xterm*:smcup@:rmcup@'
 set -g xterm-keys on
 set -g display-time 5000
 set -g allow-passthrough on
+set -ga terminal-features ',*:clipboard'
