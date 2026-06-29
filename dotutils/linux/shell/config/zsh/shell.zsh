@@ -10,7 +10,11 @@ if [[ ! -f ${ZDOTDIR:-${HOME}}/.zcomet/bin/zcomet.zsh ]]; then
     command git clone https://github.com/agkozak/zcomet.git ${ZDOTDIR:-${HOME}}/.zcomet/bin
 fi
 include -f "${HOME}/.zcomet/bin/zcomet.zsh"
-zcomet load jeffreytse/zsh-vi-mode
+if [[ -n "$NVIM" ]]; then
+  bindkey -e  # 使用 emacs 模式（即默认模式）
+else
+  zcomet load jeffreytse/zsh-vi-mode
+fi
 ZVM_SYSTEM_CLIPBOARD_ENABLED=true
 
 # NOTE: custom bindkeys.
