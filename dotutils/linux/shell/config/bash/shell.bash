@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+export CURRSHELL=bash
 
 IGNOREEOF=999
 #=====================#

@@ -1,4 +1,5 @@
 #!/usr/bin/env zsh
+export CURRSHELL=zsh
 #=====================#
 #     Zsh config      #
 #=====================#
@@ -11,9 +12,9 @@ if [[ ! -f ${ZDOTDIR:-${HOME}}/.zcomet/bin/zcomet.zsh ]]; then
 fi
 include -f "${HOME}/.zcomet/bin/zcomet.zsh"
 if [[ -n "$NVIM" ]]; then
-  bindkey -e  # 使用 emacs 模式（即默认模式）
+    bindkey -e # 使用 emacs 模式（即默认模式）
 else
-  zcomet load jeffreytse/zsh-vi-mode
+    zcomet load jeffreytse/zsh-vi-mode
 fi
 ZVM_SYSTEM_CLIPBOARD_ENABLED=true
 
