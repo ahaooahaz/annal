@@ -12,7 +12,8 @@ else ifeq ($(UNAME_S),Darwin)
 endif
 
 install: download_plugins
-	find $(MK_DIR)/config -mindepth 1 -maxdepth 1 -exec ln -sf {} $(MK_DIR)/plugins/rime-ice/ \;
+	find $(MK_DIR)/config -mindepth 1 -maxdepth 1 -type f -exec ln -sf {} $(MK_DIR)/plugins/rime-ice/ \;
+	find $(MK_DIR)/config/mylua -mindepth 1 -maxdepth 1 -type f -exec ln -sf {} $(MK_DIR)/plugins/rime-ice/lua/ \;
 	if [[ "$(OS)" == "Linux" ]]; then \
 		mv ~/.config/ibus/rime ~/.config/ibus/rime.backup.$(date +%Y%m%d%H%M%S) 2>/dev/null || true; \
 		mv ~/.local/share/fcitx5/rime ~/.local/share/fcitx5/rime.backup.$(date +%Y%m%d%H%M%S) 2>/dev/null || true; \

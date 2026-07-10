@@ -1,0 +1,2 @@
+patch:
+  engine/processors/@before 0: lua_processor@*vim_ascii
