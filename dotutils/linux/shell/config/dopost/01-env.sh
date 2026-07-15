@@ -1,9 +1,14 @@
+#!/usr/bin/env bash
+# shellcheck shell=bash
+
 include -f "${HOME}/.venv/bin/activate"
 include -f "${HOME}/.inti_shrc"
 
-hash -d config=$XDG_CONFIG_HOME
-hash -d cache=$XDG_CACHE_HOME
-hash -d data=$XDG_DATA_HOME
+if [[ "${CURRSHELL}" == "zsh" ]]; then
+    hash -d config="$XDG_CONFIG_HOME"
+    hash -d cache="$XDG_CACHE_HOME"
+    hash -d data="$XDG_DATA_HOME"
+fi
 # fzf
 export FZF_DEFAULT_OPTS="
 --color=dark
@@ -14,13 +19,13 @@ export FZF_DEFAULT_OPTS="
 --sort
 --preview '
 if [ -d {} ]; then
-    tree -N -C {} | head -500
-elif file --mime {} | grep -q image; then
-    mcat {} --ascii
+    tree -N -C -- {} | head -500
+elif file --mime -- {} | grep -q image; then
+    mcat -- {} --ascii
 else
-    bat --style=numbers --color=always {} 2>/dev/null \
-    || highlight -O ansi -l {} 2>/dev/null \
-    || cat {} | head -500
+    bat --style=numbers --color=always -- {} 2>/dev/null \
+    || highlight -O ansi -l -- {} 2>/dev/null \
+    || cat -- {} | head -500
 fi
 '
 --preview-window right:50%:wrap

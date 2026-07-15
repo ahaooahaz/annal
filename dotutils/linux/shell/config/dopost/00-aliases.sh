@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+# shellcheck shell=bash
+
 if [[ "${CURROS}" == "Darwin" ]]; then
     alias make='gmake'
     if [[ -d "/opt/homebrew/opt/binutils/bin" ]]; then

@@ -11,56 +11,61 @@ if [[ ! -f ${ZDOTDIR:-${HOME}}/.zcomet/bin/zcomet.zsh ]]; then
     command git clone https://github.com/agkozak/zcomet.git ${ZDOTDIR:-${HOME}}/.zcomet/bin
 fi
 include -f "${HOME}/.zcomet/bin/zcomet.zsh"
+
+# see issue: https://github.com/jeffreytse/zsh-vi-mode/issues/4
+function after_init() {
+    autopair-init
+    # NOTE: custom bindkeys.
+    # unbind <C_s> for kitty leader key.
+    bindkey -M vicmd -r '^D'          # unbind <Ctrl-D> in vicmd mode.
+    bindkey -M viins -r '^D'          # unbind <Ctrl-D> in viins mode.
+    bindkey -M viins '^D' delete-char # bind <Ctrl-D> in viins mode, delete-char.
+    bindkey -M viins '^Z' undo        # [Ctrl-Z]
+    bindkey -M vicmd -r '^S'
+    bindkey -M viins -r '^S'
+    bindkey '^[[A' history-substring-search-up
+    bindkey '^[[B' history-substring-search-down
+    (( $+commands[fzf] )) && source <(fzf --zsh)
+}
+
+zcomet load romkatv/zsh-defer
 if [[ -n "$NVIM" ]]; then
     bindkey -e # 使用 emacs 模式（即默认模式）
+    zsh-defer after_init
 else
+    ZVM_SYSTEM_CLIPBOARD_ENABLED=true
     zcomet load jeffreytse/zsh-vi-mode
+    zvm_after_init_commands+=(after_init)
 fi
-ZVM_SYSTEM_CLIPBOARD_ENABLED=true
-
-# NOTE: custom bindkeys.
-bindkey -M vicmd -r '^D'          # unbind <Ctrl-D> in vicmd mode.
-bindkey -M viins -r '^D'          # unbind <Ctrl-D> in viins mode.
-bindkey -M viins '^D' delete-char # bind <Ctrl-D> in viins mode, delete-char.
-bindkey -M viins '^Z' undo        # [Ctrl-Z]
-
-zcomet load zdharma-continuum/fast-syntax-highlighting
 
 zcomet load ohmyzsh lib {completion,clipboard,git}.zsh
 #zcomet load ohmyzsh plugins/autojump
 #zcomet load ohmyzsh plugins/z
+# history
+HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=1
 zcomet load ohmyzsh plugins/history
 zcomet load ohmyzsh plugins/history-substring-search
-HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=1
+
 zcomet load ohmyzsh plugins/zoxide # NOTE: need install zoxide first.
 __zoxide_z_complete() {
-    args=$(zoxide query -l)
-    _arguments "1:profiles:($args)"
-}
+      local -a dirs
+      dirs=(${(f)"$(zoxide query -l)"})
+      _describe 'zoxide dirs' dirs
+  }
 
 zcomet load ohmyzsh plugins/git
 zcomet load tj/git-extras etc git-extras-completion.zsh
-export AUTOPAIR_INIT_INHIBIT=1
+
+AUTOPAIR_INIT_INHIBIT=1
 zcomet load hlissner/zsh-autopair
 
 zcomet load romkatv/powerlevel10k
 zcomet load trapd00r/LS_COLORS
 
-# see issue: https://github.com/jeffreytse/zsh-vi-mode/issues/4
-function after_init() {
-    autopair-init
-    # unbind <C_s> for kitty leader key.
-    bindkey -M vicmd -r '^S'
-    bindkey -M viins -r '^S'
-    bindkey '^[[A' history-substring-search-up
-    bindkey '^[[B' history-substring-search-down
-    if test fzf; then
-        source <(fzf --zsh)
-    fi
-}
-zvm_after_init_commands+=(after_init)
+zcomet load zdharma-continuum/fast-syntax-highlighting
 
 zcomet compinit
+compdef __zoxide_z_complete z
 
 # NOTE: zstyle must behind compinit.
 zcomet load Aloxaf/fzf-tab
@@ -74,14 +79,14 @@ fi
 zstyle ':fzf-tab:complete:kill:argument-rest' fzf-flags '--preview-window=down:3:wrap'
 zstyle ':fzf-tab:complete:kill:*' popup-pad 0 3
 zstyle ':fzf-tab:complete:ls:*' fzf-preview '
-if [ -d $realpath ]; then
-    tree -N -C $realpath | head -500
-elif file --mime $realpath | grep -q image; then
-    mcat $realpath --ascii
+if [ -d "$realpath" ]; then
+    tree -N -C -- "$realpath" | head -500
+elif file --mime -- "$realpath" | grep -q image; then
+    mcat -- "$realpath" --ascii
 else
-    bat --style=numbers --color=always $realpath 2>/dev/null \
-    || highlight -O ansi -l $realpath 2>/dev/null \
-    || cat $realpath | head -500
+    bat --style=numbers --color=always -- "$realpath" 2>/dev/null \
+    || highlight -O ansi -l -- "$realpath" 2>/dev/null \
+    || cat -- "$realpath" | head -500
 fi
 '
 zstyle ':completion:*:__zoxide_z:*' sort false
@@ -122,7 +127,7 @@ autoload -Uz colors && colors # provide color variables (see `which colors`)
 setopt COMBINING_CHARS
 
 setopt nullglob
-export GPG_TTY=$TTY
+export GPG_TTY="${TTY:-$(tty)}"
 
 include -f "${ZDOTDIR:-${HOME}}/.p10k.zsh"
 

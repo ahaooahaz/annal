@@ -1,7 +1,16 @@
+#!/usr/bin/env bash
+# shellcheck shell=bash
+
 alias l='ls -CF'
 alias ll='ls -alF'
 alias la='ls -A'
-alias ls='ls --color=auto'
+if [[ "${CURROS}" == "Darwin" ]]; then
+    alias ls='ls -G'
+    alias open='open'
+else
+    alias ls='ls --color=auto'
+    alias open='xdg-open'
+fi
 alias lexa='exa -lh --group-directories-first --git --time-style=long-iso'
 
 alias grep='grep --color=auto'
@@ -13,14 +22,14 @@ alias t=tmux
 
 alias kubectx='kubectl config use-context '
 
-alias open='xdg-open'
-alias grep='grep --color=auto'
 alias watch='watch ' # enable alias commands
 alias sudo='sudo '   # enable alias commands
-# cale min max mean.
-alias mmm='awk '\''
-BEGIN{max=-1e10;min=1e10;sum=0;n=0}
-{sum+=$1;n+=1;if($1>max)max=$1;if($1<min)min=$1}
-END{print "Max:", max, "Min:", min, "Mean:", (n>2)?(sum-min-max)/(n-2):sum/n}'\'
+function mmm() {
+    awk '
+    BEGIN{max=-1e10;min=1e10;sum=0;n=0}
+    {sum+=$1;n+=1;if($1>max)max=$1;if($1<min)min=$1}
+    END{print "Max:", max, "Min:", min, "Mean:", (n>2)?(sum-min-max)/(n-2):sum/n}
+    ' "$@"
+}
 
 alias clear='printf "\033[H\033[J"'

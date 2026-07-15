@@ -1,4 +1,8 @@
-export CURROS=$(uname -s)
+#!/usr/bin/env bash
+# shellcheck shell=bash
+
+CURROS=$(uname -s)
+export CURROS
 export XDG_CONFIG_HOME=~/.config
 export XDG_CACHE_HOME=~/.cache
 export XDG_DATA_HOME=~/.local/share
@@ -32,28 +36,27 @@ if [[ -n "$XDG_SESSION_TYPE" && "$XDG_SESSION_TYPE" != "tty" ]]; then
 fi
 
 # private env.
-include -f ${HOME}/.inti_envrc
+include -f "${HOME}/.inti_envrc"
 
-# runtime env.
-add_to PATH /usr/local/bin $HOME/.local/bin $HOME/.local/scripts $GOPATH/bin $HOME/.cargo/bin $HOME/.local/cmake/bin
 # language env.
 # Golang env.
 ZGOPATH="$HOME/dev/go"
 if [[ -s "$HOME/.gvm/scripts/gvm" ]]; then
+    # shellcheck source=/dev/null
     source "$HOME/.gvm/scripts/gvm" && unset -f cd
-    function gouse() {
-        gvm use $1 --default
-    }
 else
     export GOPATH=$ZGOPATH
-    add_to PATH $HOME/.local/go/bin
+    add_to PATH "$HOME/.local/go/bin"
 fi
 
 # nvm env.
 NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+# shellcheck source=/dev/null
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
-if [[ "${CURROS:-$(uname -s)}" == "Darwin" ]]; then
+# runtime env.
+add_to PATH /usr/local/bin "$HOME/.local/bin" "$HOME/.local/scripts" "$GOPATH/bin" "$HOME/.cargo/bin" "$HOME/.local/cmake/bin"
+if [[ "${CURROS}" == "Darwin" ]]; then
     add_to PATH "/opt/homebrew/sbin" "/opt/homebrew/bin"
     add_to DYLD_FALLBACK_LIBRARY_PATH "/opt/homebrew/lib"
 fi

@@ -1,10 +1,15 @@
+#!/usr/bin/env bash
+# shellcheck shell=bash
+
 function include() {
     case $1 in
     -f)
-        [[ -f $2 ]] && source $2
+        # shellcheck source=/dev/null
+        [[ -f "$2" ]] && source "$2"
         ;;
     -c)
-        local output=$($=2) &>/dev/null && eval $output
+        local output
+        output=$(eval "$2" 2>/dev/null) && eval "$output"
         ;;
     *)
         echo 'Unknown argument!' >&2
@@ -17,13 +22,11 @@ function include() {
 function proxy() {
     case $1 in
     on)
-        export all_proxy="${custom_proxy}" no_proxy=127.0.0.1,localhost
+        export all_proxy="${custom_proxy:-}" no_proxy=127.0.0.1,localhost
         export http_proxy=$all_proxy https_proxy=$all_proxy
         ;;
     off)
-        unset no_proxy
-        unset http_proxy
-        unset https_proxy
+        unset all_proxy no_proxy http_proxy https_proxy
         ;;
     -h | --help)
         cat <<EOF
@@ -35,8 +38,10 @@ EOF
         ;;
     *)
         proxy on
-        $@
+        "$@"
+        local status=$?
         proxy off
+        return "$status"
         ;;
     esac
 }
@@ -65,8 +70,7 @@ function isnum() {
         return 1
     fi
 
-    expr $1 "+" 10 &>/dev/null
-    if [ $? -ne 0 ]; then
+    if ! [[ $1 =~ ^-?[0-9]+$ ]]; then
         return 1
     fi
 
@@ -78,11 +82,11 @@ function ssht() {
 }
 
 function condasetup() {
-    __conda_setup="$('$HOME/.miniconda3/bin/conda' 'shell.zsh' 'hook' 2>/dev/null)"
-    if [ $? -eq 0 ]; then
+    if __conda_setup="$("$HOME/.miniconda3/bin/conda" "shell.${CURRSHELL}" hook 2>/dev/null)"; then
         eval "$__conda_setup"
     else
         if [ -f "$HOME/.miniconda3/etc/profile.d/conda.sh" ]; then
+            # shellcheck source=/dev/null
             . "$HOME/.miniconda3/etc/profile.d/conda.sh"
         else
             add_to PATH "$HOME/.miniconda3/bin"
@@ -98,6 +102,7 @@ function add_to() {
     eval "current_val=\${$envname}"
 
     for dir in "$@"; do
+        [[ -d "$dir" ]] || continue
         case ":$current_val:" in
         *":$dir:"*) ;;
         *) current_val="$dir:$current_val" ;;
