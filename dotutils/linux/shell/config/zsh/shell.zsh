@@ -25,7 +25,7 @@ function after_init() {
     bindkey -M viins -r '^S'
     bindkey '^[[A' history-substring-search-up
     bindkey '^[[B' history-substring-search-down
-    (( $+commands[fzf] )) && source <(fzf --zsh)
+    (($+commands[fzf])) && source <(fzf --zsh)
 }
 
 zcomet load romkatv/zsh-defer
@@ -48,10 +48,10 @@ zcomet load ohmyzsh plugins/history-substring-search
 
 zcomet load ohmyzsh plugins/zoxide # NOTE: need install zoxide first.
 __zoxide_z_complete() {
-      local -a dirs
-      dirs=(${(f)"$(zoxide query -l)"})
-      _describe 'zoxide dirs' dirs
-  }
+    local -a dirs
+    dirs=(${(f)"$(zoxide query -l)"})
+    _describe 'zoxide dirs' dirs
+}
 
 zcomet load ohmyzsh plugins/git
 zcomet load tj/git-extras etc git-extras-completion.zsh

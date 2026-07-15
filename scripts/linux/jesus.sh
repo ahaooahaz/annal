@@ -1,7 +1,7 @@
 #!/bin/sh
 # shh login info.
 
-cat << EOF
+cat <<EOF
 
 
                                |~~~~~~~|

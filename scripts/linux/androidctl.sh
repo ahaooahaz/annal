@@ -5,7 +5,7 @@ serial=
 adbopt="adb"
 
 function usage() {
-    cat << EOF
+    cat <<EOF
 usage: android_cpu_freq.sh [get_cpu_freq|set_cpu_freq] [OPTIONS]
     set_cpu_freq|get_cpu_freq
         -s              device serial number
@@ -17,19 +17,19 @@ function parse() {
     ARGS=$(getopt -o s:,L: -l serial: -- "$@")
     eval set -- "$ARGS"
 
-    while [ $# -gt 0 ] ; do
+    while [ $# -gt 0 ]; do
         case "$1" in
-            -s|--serial)
-                serial=$2
-                adbopt="adb -s $serial"
-                shift 2
-                ;;
-            -L)
-                shift 2
-                ;;
-            *)
-                shift
-                ;;
+        -s | --serial)
+            serial=$2
+            adbopt="adb -s $serial"
+            shift 2
+            ;;
+        -L)
+            shift 2
+            ;;
+        *)
+            shift
+            ;;
         esac
     done
 }
@@ -77,7 +77,6 @@ function set_cpu_freq() {
 '
     get_cpu_freq
 }
-
 
 if [ $# -eq 0 ]; then
     usage

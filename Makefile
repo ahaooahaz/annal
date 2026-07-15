@@ -9,6 +9,8 @@ else
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
     mk := linux
+format:
+	git ls-files | grep -E '\.(sh|zsh)$$' | xargs -I {} shfmt -w {}
 else ifeq ($(UNAME_S),Darwin)
     mk := darwin
 endif
