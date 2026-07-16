@@ -25,7 +25,9 @@ function after_init() {
     bindkey -M viins -r '^S'
     bindkey '^[[A' history-substring-search-up
     bindkey '^[[B' history-substring-search-down
-    (($+commands[fzf])) && source <(fzf --zsh)
+    if command -v fzf >/dev/null 2>&1; then
+        source <(fzf --zsh)
+    fi
 }
 
 zcomet load romkatv/zsh-defer
