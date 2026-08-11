@@ -36,7 +36,7 @@ function parse() {
 
 # shellcheck disable=SC2329
 function get_cpu_freq() {
-    # shellcheck disable=SC2016
+    # shellcheck disable=SC2016,SC2317
     ${adbopt} exec-out '
         cpu_count=`cat /sys/devices/system/cpu/present`
         cpu_count=${cpu_count//"0-"/}
@@ -61,7 +61,7 @@ max_freq($cpuinfo_max_freq/$scaling_max_freq)"
 
 # shellcheck disable=SC2329
 function set_cpu_freq() {
-    # shellcheck disable=SC2016
+    # shellcheck disable=SC2016,SC2317
     ${adbopt} exec-out '
         cpu_count=`cat /sys/devices/system/cpu/present`
         cpu_count=${cpu_count//"0-"/}
@@ -75,6 +75,7 @@ function set_cpu_freq() {
             echo $cpuinfo_max_freq > /sys/devices/system/cpu/cpu$i/cpufreq/scaling_max_freq
         done
 '
+    # shellcheck disable=SC2317
     get_cpu_freq
 }
 

@@ -1,1 +1,0 @@
-/home/zhanghao/.annal/dotutils/linux/tmux/plugins/.tmux

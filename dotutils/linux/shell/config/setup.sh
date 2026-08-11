@@ -14,29 +14,18 @@ elif [ -n "$ZSH_VERSION" ]; then
     setopt nullglob
 fi
 
-for f in "$SHELL_ROOT_DIR/dopre/"*; do
-    # shellcheck source=/dev/null
-    [ -r "$f" ] && source "$f"
-done
-
+# Expand every glob up front, in load order: shared -> per-shell -> shared.
+_shell_files=("$SHELL_ROOT_DIR/dopre/"*)
 if [ -n "$BASH_VERSION" ]; then
-    for f in "$SHELL_ROOT_DIR/bash/"*; do
-        # shellcheck source=/dev/null
-        [ -r "$f" ] && source "$f"
-    done
+    _shell_files+=("$SHELL_ROOT_DIR/bash/"*)
 elif [ -n "$ZSH_VERSION" ]; then
-    for f in "$SHELL_ROOT_DIR/zsh/"*; do
-        # shellcheck source=/dev/null
-        [ -r "$f" ] && source "$f"
-    done
+    _shell_files+=("$SHELL_ROOT_DIR/zsh/"*)
 fi
+_shell_files+=("$SHELL_ROOT_DIR/dopost/"*)
 
-for f in "$SHELL_ROOT_DIR/dopost/"*; do
-    # shellcheck source=/dev/null
-    [ -r "$f" ] && source "$f"
-done
-
-# Restore the caller's original nullglob setting.
+# Restore the caller's original nullglob setting. This has to happen *before*
+# sourcing, otherwise it would also revert options the sourced files set for
+# themselves (e.g. `setopt nullglob` in zsh/shell.zsh).
 if [ -n "$BASH_VERSION" ]; then
     eval "$_shell_nullglob_was_set"
     unset _shell_nullglob_was_set
@@ -48,3 +37,9 @@ elif [ -n "$ZSH_VERSION" ]; then
     fi
     unset _shell_nullglob_was_set
 fi
+
+for f in "${_shell_files[@]}"; do
+    # shellcheck source=/dev/null
+    [ -r "$f" ] && source "$f"
+done
+unset _shell_files f
