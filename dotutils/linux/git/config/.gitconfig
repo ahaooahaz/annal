@@ -4,6 +4,9 @@
 [includeIf "gitdir:~/dev/proj/"]
     path = ~/.gitconfig.d/user.work
 
+[includeIf "gitdir:~/dev/agent/"]
+    path = ~/.gitconfig.d/user.work
+
 [filter "lfs"]
     smudge = git-lfs smudge -- %f
     process = git-lfs filter-process
@@ -32,4 +35,3 @@
 [difftool "meld"]
     cmd = meld "$LOCAL" "$REMOTE"
 [commit]
-	gpgsign = true
