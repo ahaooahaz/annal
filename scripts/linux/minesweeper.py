@@ -7,12 +7,15 @@ Usage:
 
 Controls:
     arrows / hjkl    move cursor
-    space / enter    dig
-    f                toggle flag
-    a                chord: dig neighbours when flags match the number
+    space / enter    on a hidden cell: dig
+                     on a number: auto-flag the neighbours that must be mines
+                     (unknown count == missing mine count), otherwise open the
+                     rest once its flags already account for the number
+    f                toggle flag by hand (for cells you can only guess at)
+    a                chord only -- open the rest, never auto-flag
     r                restart
     q                quit
-    left click digs, right click flags
+    left click behaves like space, right click flags
 """
 
 import curses
@@ -114,15 +117,46 @@ class Board:
     def chord(self, r, c):
         """已翻开的数字格，若周围旗数等于数字，则挖开其余邻格。"""
         if self.state[r][c] != REVEALED or self.count[r][c] == 0:
-            return
+            return 0
         nb = list(self.neighbors(r, c))
         if sum(1 for nr, nc in nb if self.state[nr][nc] == FLAGGED) != self.count[r][c]:
-            return
+            return 0
+        dug = 0
         for nr, nc in nb:
             if self.state[nr][nc] == HIDDEN:
                 self.reveal(nr, nc)
+                dug += 1
                 if self.dead:
-                    return
+                    return dug
+        return dug
+
+    def auto_flag(self, r, c):
+        """已翻开的数字格：若剩余未知格数正好等于还缺的雷数，这些格必然是雷，全部插旗。
+
+        纯逻辑推导，绝不猜测 —— 不满足等式时一格不动。返回插旗数量。
+        """
+        if self.state[r][c] != REVEALED or self.count[r][c] == 0:
+            return 0
+        nb = list(self.neighbors(r, c))
+        hidden = [(nr, nc) for nr, nc in nb if self.state[nr][nc] == HIDDEN]
+        flagged = sum(1 for nr, nc in nb if self.state[nr][nc] == FLAGGED)
+        if not hidden or len(hidden) != self.count[r][c] - flagged:
+            return 0
+        for nr, nc in hidden:
+            self.state[nr][nc] = FLAGGED
+        return len(hidden)
+
+    def smart(self, r, c):
+        """已翻开数字格上的一键操作：能确定是雷就插旗，旗数已够就挖开其余。
+
+        两分支互斥：同时成立需 hidden == 0，而两者都要求 hidden > 0。
+        返回 ("flag"|"dig"|"none", 影响格数) 供状态行提示。
+        """
+        n = self.auto_flag(r, c)
+        if n:
+            return "flag", n
+        n = self.chord(r, c)
+        return ("dig", n) if n else ("none", 0)
 
 
 NUM_COLOR = {1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6, 7: 7, 8: 8}
@@ -192,7 +226,7 @@ def cell_glyph(b, r, c):
 def draw(stdscr, b, cur, elapsed, msg):
     stdscr.erase()
     h, w = stdscr.getmaxyx()
-    need_h, need_w = TOP + b.rows + 3, LEFT + b.cols * 2 + 2
+    need_h, need_w = TOP + b.rows + 4, LEFT + b.cols * 2 + 2
     if h < need_h or w < need_w:
         put(stdscr, 0, 0, f"Window too small: need {need_w}x{need_h}, got {w}x{h}")
         put(stdscr, 1, 0, "Enlarge the window, or start a smaller board.")
@@ -220,21 +254,33 @@ def draw(stdscr, b, cur, elapsed, msg):
                 pair, attr = C_CURSOR, curses.A_BOLD
             put(stdscr, TOP + r, LEFT + c * 2, ch, curses.color_pair(pair) | attr)
 
+    foot = TOP + b.rows + 1
     if msg:
-        put(stdscr, TOP + b.rows + 1, 0, msg, curses.color_pair(C_TEXT) | curses.A_BOLD)
+        put(stdscr, foot, 0, msg, curses.color_pair(C_TEXT) | curses.A_BOLD)
     else:
-        put(
-            stdscr,
-            TOP + b.rows + 1,
-            0,
-            "hjkl move | space dig | f flag | a chord | r restart | q quit",
-            curses.A_DIM,
-        )
+        put(stdscr, foot, 0, "space  dig / auto-flag certain mines", curses.A_DIM)
+    put(
+        stdscr,
+        foot + 1,
+        0,
+        "hjkl move | f flag | a chord only | r restart | q quit",
+        curses.A_DIM,
+    )
     stdscr.refresh()
 
 
 def new_board(rows, cols, mines):
     return Board(rows, cols, mines)
+
+
+def describe(outcome):
+    """把 Board.smart 的返回值翻成状态行文案；'none' 必须有反馈，否则像按键失灵。"""
+    kind, n = outcome
+    if kind == "flag":
+        return f"  Flagged {n} certain mine{'s' if n > 1 else ''}."
+    if kind == "dig":
+        return f"  Opened {n} cell{'s' if n > 1 else ''}."
+    return "  Nothing certain here -- flag count doesn't pin it down yet."
 
 
 def main(stdscr, rows, cols, mines):
@@ -250,6 +296,7 @@ def main(stdscr, rows, cols, mines):
     cur = (rows // 2, cols // 2)
     start = None
     frozen = 0.0
+    hint = ""  # 上一次 smart 操作的结果，显示到下次按键为止
 
     while True:
         if b.dead or b.won:
@@ -262,7 +309,7 @@ def main(stdscr, rows, cols, mines):
         else:
             elapsed = time.monotonic() - start if start else 0.0
             frozen = elapsed
-            msg = ""
+            msg = hint
 
         draw(stdscr, b, cur, elapsed, msg)
 
@@ -281,10 +328,11 @@ def main(stdscr, rows, cols, mines):
         if key == ord("r"):
             b = new_board(rows, cols, mines)
             cur = (rows // 2, cols // 2)
-            start, frozen = None, 0.0
+            start, frozen, hint = None, 0.0, ""
             continue
         if b.dead or b.won:
             continue
+        hint = ""
 
         if key in (curses.KEY_UP, ord("k")):
             cur = (max(0, r - 1), c)
@@ -298,7 +346,7 @@ def main(stdscr, rows, cols, mines):
             if start is None:
                 start = time.monotonic()
             if b.state[r][c] == REVEALED:
-                b.chord(r, c)
+                hint = describe(b.smart(r, c))
             else:
                 b.reveal(r, c)
         elif key == ord("f"):
@@ -321,7 +369,7 @@ def main(stdscr, rows, cols, mines):
                     b.toggle_flag(mr, mc)
                 elif bstate & curses.BUTTON1_CLICKED:
                     if b.state[mr][mc] == REVEALED:
-                        b.chord(mr, mc)
+                        hint = describe(b.smart(mr, mc))
                     else:
                         b.reveal(mr, mc)
 
