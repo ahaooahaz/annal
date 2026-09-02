@@ -18,7 +18,7 @@ alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 
 alias say=spd-say
-alias t=tmux
+alias t=todo.sh
 
 alias kubectx='kubectl config use-context '
 

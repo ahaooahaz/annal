@@ -490,6 +490,7 @@ tmux_conf_uninstall_plugins_on_reload=true
 #set -g @plugin 'tmux-plugins/tmux-continuum'
 #set -g @continuum-restore 'on'
 set -g @plugin 'tmux-plugins/tmux-yank'
+set -g @override_copy_command 'tmux load-buffer -w -'
 set -g @yank_selection_mouse 'clipboard'
 # 鼠标复制后保留在 copy mode，松开鼠标不会立即跳回最新输出；
 # 按 q 退出 copy mode 时才返回底部。
