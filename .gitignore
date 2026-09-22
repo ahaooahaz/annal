@@ -12,3 +12,4 @@
 /plugins
 *backup*
 /CLAUDE.md
+__pycache__
