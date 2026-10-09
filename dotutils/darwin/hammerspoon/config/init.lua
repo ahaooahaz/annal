@@ -206,6 +206,56 @@ local function moveWindowToScreen(window, screen)
 end
 
 ----------------------------------------------------------------------
+-- 只把单个 Kitty 窗口显示到最上层
+--
+-- 注意：不能使用 application:activate()。
+-- hs.application:activate() 内部会先把应用「当前聚焦的窗口」
+-- becomeMain() 并带到前台，如果那个窗口在另一块屏幕上，
+-- 就会导致两块屏幕上的 Kitty 同时被提到最上层。
+--
+-- 正确做法是先让目标窗口成为主窗口，再激活应用，
+-- 这样 macOS 只会把这一个窗口带到前台，
+-- 另一块屏幕上的 Kitty 保持原来的层级。
+----------------------------------------------------------------------
+
+local function focusSingleWindow(window)
+	if not window then
+		return false
+	end
+
+	local application = window:application()
+
+	-- 如果 Kitty 整个应用被隐藏，先恢复
+	if application and application:isHidden() then
+		application:unhide()
+	end
+
+	local wasMinimized = window:isMinimized()
+
+	restoreWindow(window)
+
+	local function focus()
+		-- becomeMain() 必须在激活应用之前调用
+		window:becomeMain()
+
+		-- raise() 只调整该窗口在应用内部的层级，不影响其他窗口
+		window:raise()
+
+		-- focus() = becomeMain() + 激活应用（不带 allWindows）
+		window:focus()
+	end
+
+	-- 取消最小化需要一点时间，等窗口恢复后再聚焦
+	if wasMinimized then
+		hs.timer.doAfter(0.1, focus)
+	else
+		focus()
+	end
+
+	return true
+end
+
+----------------------------------------------------------------------
 -- 将两个 Kitty 窗口显示到前台
 --
 -- macOS 同一时刻只有一个窗口能接收键盘输入，但调用
@@ -493,19 +543,7 @@ local function focusLeftKitty()
 		return
 	end
 
-	local application = getKittyApplication()
-
-	if application then
-		application:unhide()
-		application:activate(false)
-	end
-
-	restoreWindow(window)
-
-	hs.timer.doAfter(0.1, function()
-		window:raise()
-		window:focus()
-	end)
+	focusSingleWindow(window)
 end
 
 ----------------------------------------------------------------------
@@ -527,19 +565,7 @@ local function focusRightKitty()
 		return
 	end
 
-	local application = getKittyApplication()
-
-	if application then
-		application:unhide()
-		application:activate(false)
-	end
-
-	restoreWindow(window)
-
-	hs.timer.doAfter(0.1, function()
-		window:raise()
-		window:focus()
-	end)
+	focusSingleWindow(window)
 end
 
 ----------------------------------------------------------------------
