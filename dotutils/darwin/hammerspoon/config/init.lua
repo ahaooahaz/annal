@@ -401,16 +401,56 @@ end
 --
 -- 这里使用局部轮询函数，不调用不存在的
 -- waitForKittyStartup 方法。
+--
+-- 使用模块级的 arrangeSession 做互斥：
+-- Kitty 尚未运行时，Ctrl + Shift + L / Ctrl + Shift + H / Ctrl + Shift + T
+-- 三个快捷键都会走到这里。如果不加锁，每个快捷键都会各自启动一个
+-- 轮询循环，每个循环在自己的 newWindowRequested 上各发一次
+-- Command + N，最终会多开出好几个窗口。
+--
+-- 同一时间只允许存在一个会话，后来的调用直接复用已有会话。
 ----------------------------------------------------------------------
 
+local arrangeSession = nil
+
 local function waitAndArrangeKitty()
-	local retryCount = 0
-	local newWindowRequested = false
+	--------------------------------------------------------------
+	-- 已经有会话在跑，直接复用，不再启动新的循环
+	--------------------------------------------------------------
+
+	if arrangeSession then
+		return
+	end
+
+	local session = {
+		retryCount = 0,
+		newWindowRequested = false,
+	}
+
+	arrangeSession = session
+
+	--------------------------------------------------------------
+	-- 结束会话
+	--
+	-- 只有自己仍然是当前会话时才清空，避免误清掉别的会话。
+	--------------------------------------------------------------
+
+	local function finish()
+		if arrangeSession == session then
+			arrangeSession = nil
+		end
+	end
 
 	local function check()
-		retryCount = retryCount + 1
+		-- 会话已被其他路径结束
+		if arrangeSession ~= session then
+			return
+		end
 
-		if retryCount > MAX_RETRY_COUNT then
+		session.retryCount = session.retryCount + 1
+
+		if session.retryCount > MAX_RETRY_COUNT then
+			finish()
 			hs.alert.show("等待 Kitty 窗口超时")
 			return
 		end
@@ -442,8 +482,8 @@ local function waitAndArrangeKitty()
 		----------------------------------------------------------
 
 		if #windows == 1 then
-			if not newWindowRequested then
-				newWindowRequested = true
+			if not session.newWindowRequested then
+				session.newWindowRequested = true
 				createNewKittyWindow()
 			end
 
@@ -454,6 +494,10 @@ local function waitAndArrangeKitty()
 		----------------------------------------------------------
 		-- 已有至少两个窗口，开始排列
 		----------------------------------------------------------
+
+		-- 先结束会话，再执行排列：
+		-- 排列本身可能要几百毫秒，期间不应该阻塞新的会话。
+		finish()
 
 		if arrangeKittyWindows() then
 			hs.alert.show("Kitty 已显示在左右屏幕")
@@ -470,6 +514,17 @@ end
 ----------------------------------------------------------------------
 
 local function showOrCreateKittyOnBothScreens()
+	--------------------------------------------------------------
+	-- 已经有等待会话在跑
+	--
+	-- 用户可能连续按下 Ctrl + Shift + L / Ctrl + Shift + H / Ctrl + Shift + T，
+	-- 此时不要再启动 Kitty、也不要再开新的轮询循环。
+	--------------------------------------------------------------
+
+	if arrangeSession then
+		return
+	end
+
 	local leftScreen, rightScreen = getLeftAndRightScreens()
 
 	if not leftScreen or not rightScreen then
