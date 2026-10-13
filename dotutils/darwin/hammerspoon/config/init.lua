@@ -27,6 +27,14 @@ local RETRY_INTERVAL = 0.25
 -- 最多等待约 10 秒
 local MAX_RETRY_COUNT = 40
 
+-- 从别的应用切到 Kitty 时，最多还原多少个被挤下去的窗口
+local MAX_RESTORED_WINDOWS = 8
+
+-- 确认焦点的间隔与最多确认次数
+local FOCUS_CHECK_INTERVAL = 0.3
+local MAX_FOCUS_CHECKS = 4
+
+
 ----------------------------------------------------------------------
 -- 获取 Kitty 应用
 ----------------------------------------------------------------------
@@ -206,16 +214,232 @@ local function moveWindowToScreen(window, screen)
 end
 
 ----------------------------------------------------------------------
--- 只把单个 Kitty 窗口显示到最上层
+-- 用 Accessibility 接口接管键盘焦点
 --
--- 注意：不能使用 application:activate()。
--- hs.application:activate() 内部会先把应用「当前聚焦的窗口」
--- becomeMain() 并带到前台，如果那个窗口在另一块屏幕上，
--- 就会导致两块屏幕上的 Kitty 同时被提到最上层。
+-- hs.window:becomeMain() 只会设置 AXMain，
+-- 而在 AppKit 里 main window 和 key window（键盘焦点窗口）
+-- 是两个不同的概念，只设 AXMain 不会把键盘焦点换过来。
 --
--- 正确做法是先让目标窗口成为主窗口，再激活应用，
--- 这样 macOS 只会把这一个窗口带到前台，
--- 另一块屏幕上的 Kitty 保持原来的层级。
+-- 额外设置 AXFocused 才会真正把 key window 换成目标窗口。
+----------------------------------------------------------------------
+
+local function takeKeyboardFocus(window)
+	local axWindow = hs.axuielement and hs.axuielement.windowElement(window)
+
+	if not axWindow then
+		-- 没有 axuielement 时退而求其次
+		window:becomeMain()
+		return false
+	end
+
+	axWindow:setAttributeValue("AXMain", true)
+	axWindow:setAttributeValue("AXFocused", true)
+
+	return true
+end
+
+----------------------------------------------------------------------
+-- 判断两个矩形是否相交
+----------------------------------------------------------------------
+
+local function framesOverlap(frameA, frameB)
+	if not frameA or not frameB then
+		return false
+	end
+
+	return frameA.x < frameB.x + frameB.w
+		and frameB.x < frameA.x + frameA.w
+		and frameA.y < frameB.y + frameB.h
+		and frameB.y < frameA.y + frameA.h
+end
+
+----------------------------------------------------------------------
+-- 快照「原本压在另一块屏幕的 Kitty 上面」的那些窗口
+--
+-- 从别的应用切到 Kitty 时必须激活 Kitty，而激活会把 Kitty 的
+-- 所有窗口一起带到前台，于是另一块屏幕上的 Kitty 会盖住
+-- 原本压在它上面的窗口。
+--
+-- 这里在激活之前先把这些窗口按「从后到前」的顺序记下来，
+-- 激活完成后重新 raise 一遍就能还原层级。
+--
+-- 参考窗口取「层级最低的那个非目标 Kitty 窗口」，
+-- 这样比它浅的 Kitty 窗口自然也被覆盖到了。
+----------------------------------------------------------------------
+
+local function snapshotDisplacedWindows(targetWindow)
+	local orderedWindows = hs.window.orderedWindows()
+	local referenceIndex = nil
+
+	for index = #orderedWindows, 1, -1 do
+		local candidate = orderedWindows[index]
+		local application = candidate:application()
+
+		if
+			application
+			and application:bundleID() == KITTY_BUNDLE_ID
+			and not isSameWindow(candidate, targetWindow)
+		then
+			referenceIndex = index
+			break
+		end
+	end
+
+	if not referenceIndex then
+		return {}
+	end
+
+	local referenceFrame = orderedWindows[referenceIndex]:frame()
+	local displacedWindows = {}
+
+	--------------------------------------------------------------
+	-- 由近及远地往上收集，这个顺序正好就是之后 raise 的顺序：
+	-- 先 raise 离参考窗口最近的，最后 raise 最前面的，
+	-- 这样它们之间的相对顺序也能保持。
+	--
+	-- 只收集和参考窗口有重叠的窗口，
+	-- 不在同一块屏幕上的窗口重排了也看不出来，纯属多余的跳动。
+	--------------------------------------------------------------
+
+	for index = referenceIndex - 1, 1, -1 do
+		local candidate = orderedWindows[index]
+		local application = candidate:application()
+
+		if
+			application
+			and application:bundleID() ~= KITTY_BUNDLE_ID
+			and framesOverlap(candidate:frame(), referenceFrame)
+		then
+			table.insert(displacedWindows, candidate)
+		end
+	end
+
+	-- 超出上限时丢掉层级最低的那些，保留用户最可能在看的几个
+	while #displacedWindows > MAX_RESTORED_WINDOWS do
+		table.remove(displacedWindows, 1)
+	end
+
+	return displacedWindows
+end
+
+----------------------------------------------------------------------
+-- 把快照里的窗口重新 raise 回去
+--
+-- 按「由后到前」的顺序 raise，最后一个 raise 的窗口在最上层，
+-- 它们之间的相对顺序就还原了。
+--
+-- 这些 raise 必须挤在同一轮事件循环里一次发完。
+-- 实测用定时器把它们错开的话，激活状态还没落定时
+-- 个别应用（例如 Chrome）会趁机把自己整个激活，抢走焦点。
+----------------------------------------------------------------------
+
+local function restoreDisplacedWindows(displacedWindows)
+	for _, candidate in ipairs(displacedWindows) do
+		if candidate:id() and not candidate:isMinimized() then
+			candidate:raise()
+		end
+	end
+end
+
+----------------------------------------------------------------------
+-- 接管键盘焦点并抬升窗口
+----------------------------------------------------------------------
+
+local function raiseAndFocusWindow(window)
+	if not window or not window:id() then
+		return
+	end
+
+	takeKeyboardFocus(window)
+	window:raise()
+end
+
+----------------------------------------------------------------------
+-- 激活应用
+--
+-- 优先设置 AXFrontmost，失败时退回 activate(false)。
+-- 两者都会让 AppKit 把这个应用的所有窗口一起带到前台。
+----------------------------------------------------------------------
+
+local function activateApplication(application)
+	if not application then
+		return
+	end
+
+	local axApplication = hs.axuielement and hs.axuielement.applicationElement(application)
+
+	if axApplication and axApplication:setAttributeValue("AXFrontmost", true) then
+		return
+	end
+
+	application:activate(false)
+end
+
+----------------------------------------------------------------------
+-- 确认焦点真的落在目标窗口上，否则抢回来
+--
+-- 还原层级时要 raise 别的应用的窗口，而个别应用（实测是 Chrome）
+-- 会借着 AXRaise 把自己整个激活，顺手把焦点抢走。
+--
+-- 这里宁可牺牲层级，也要保证焦点落在目标终端上：
+-- 发现焦点跑了就重新激活 Kitty 抢回来
+-- （代价是另一块屏幕上的 Kitty 会再次被带到前台）。
+----------------------------------------------------------------------
+
+local function ensureWindowFocused(window, retriesLeft)
+	if not window or not window:id() or retriesLeft <= 0 then
+		return
+	end
+
+	local application = window:application()
+
+	if not application then
+		return
+	end
+
+	if application:isFrontmost() and isSameWindow(hs.window.focusedWindow(), window) then
+		return
+	end
+
+	if not application:isFrontmost() then
+		activateApplication(application)
+	end
+
+	raiseAndFocusWindow(window)
+
+	hs.timer.doAfter(FOCUS_CHECK_INTERVAL, function()
+		ensureWindowFocused(window, retriesLeft - 1)
+	end)
+end
+
+----------------------------------------------------------------------
+-- 只把单个 Kitty 窗口提升到最前并聚焦
+--
+-- 本机实测（macOS 26 + Kitty + Hammerspoon）结论：
+--
+-- 1. window:raise() 是「手术刀」：只抬升目标窗口，
+--    不会牵动同一个应用的其他窗口。
+--
+-- 2. 任何应用级激活（window:focus() / application:activate() /
+--    AXFrontmost）都会被 AppKit 的「恢复整个窗口组」行为
+--    放大成「把 Kitty 的所有窗口一起带到前台」，
+--    于是另一块屏幕上的 Kitty 也被提升到最上层。
+--    （和系统设置 com.apple.WindowManager AppWindowGroupingBehavior
+--    无关，实测改成 0 也一样。）
+--
+-- 3. 激活之后 Kitty 还会把 key window 换回它自己记住的那个窗口，
+--    覆盖我们指定的目标窗口。
+--
+-- 因此分两条路：
+--
+--   * Kitty 已经在最前台时（焦点本来就在某个 Kitty 窗口里，
+--     也就是左右来回切的场景）完全不激活应用，
+--     只用 AX 转移键盘焦点 + raise 目标窗口，
+--     另一块屏幕上的 Kitty 层级完全不动。
+--
+--   * Kitty 在后台时必须激活。激活前先快照「原本压在另一块
+--     Kitty 上面的那些窗口」，激活后把焦点纠正到目标窗口，
+--     再把那些窗口 raise 回原位。
 ----------------------------------------------------------------------
 
 local function focusSingleWindow(window)
@@ -234,27 +458,60 @@ local function focusSingleWindow(window)
 
 	restoreWindow(window)
 
-	local function focus()
-		-- becomeMain() 必须在激活应用之前调用
-		window:becomeMain()
+	local function run()
+		local currentApplication = window:application()
 
-		-- raise() 只调整该窗口在应用内部的层级，不影响其他窗口
-		window:raise()
+		----------------------------------------------------------
+		-- Kitty 已经在最前台：只动目标窗口
+		--
+		-- 这里一定不能激活应用，否则另一块屏幕上的 Kitty
+		-- 会被系统一起提升到最上层。
+		----------------------------------------------------------
 
-		-- focus() = becomeMain() + 激活应用（不带 allWindows）
-		window:focus()
+		if not currentApplication or currentApplication:isFrontmost() then
+			raiseAndFocusWindow(window)
+			return
+		end
+
+		----------------------------------------------------------
+		-- Kitty 在后台：必须激活才能拿到键盘焦点
+		----------------------------------------------------------
+
+		local displacedWindows = snapshotDisplacedWindows(window)
+
+		raiseAndFocusWindow(window)
+		activateApplication(currentApplication)
+
+		-- 激活后 Kitty 会把焦点抢回它自己记住的窗口，这里纠正回来
+		hs.timer.doAfter(0.08, function()
+			raiseAndFocusWindow(window)
+		end)
+
+		hs.timer.doAfter(0.25, function()
+			raiseAndFocusWindow(window)
+		end)
+
+		-- 等激活引起的窗口重排彻底结束，再还原被挤下去的窗口
+		hs.timer.doAfter(0.35, function()
+			restoreDisplacedWindows(displacedWindows)
+			raiseAndFocusWindow(window)
+
+			-- 还原过程中焦点可能被别的应用抢走，这里反复确认
+			hs.timer.doAfter(FOCUS_CHECK_INTERVAL, function()
+				ensureWindowFocused(window, MAX_FOCUS_CHECKS)
+			end)
+		end)
 	end
 
 	-- 取消最小化需要一点时间，等窗口恢复后再聚焦
 	if wasMinimized then
-		hs.timer.doAfter(0.1, focus)
+		hs.timer.doAfter(0.1, run)
 	else
-		focus()
+		run()
 	end
 
 	return true
 end
-
 ----------------------------------------------------------------------
 -- 将两个 Kitty 窗口显示到前台
 --
