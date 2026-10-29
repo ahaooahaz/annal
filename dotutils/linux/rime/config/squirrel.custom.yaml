@@ -8,7 +8,9 @@ patch:
     # 修改字体其他字体导致在windows主页搜索框输入中文时卡顿
     font_face: "JetBrainsMono Nerd Font"
     font_point: 18
-    horizontal: false
+    horizontal: true      # 候选词横排：true；false
+    candidate_list_layout: linear # 新式字段：linear（横排）| stacked（竖排），Squirrel 1.0+
+    text_orientation: horizontal  # 文字方向：horizontal | vertical
     inline_preedit: true
     fullscreen: false # 全屏排列：true；false
     vertical_text: false # 竖排：true；false
