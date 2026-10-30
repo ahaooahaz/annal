@@ -8,6 +8,9 @@ patch:
     # 修改字体其他字体导致在windows主页搜索框输入中文时卡顿
     font_face: "JetBrainsMono Nerd Font"
     font_point: 18
+    label_font_point: 12
+    # 用窄空格替代普通空格，去掉序号后的点，让横排候选更紧凑
+    candidate_format: "[label]\u2009[candidate]\u2009[comment]"
     horizontal: true      # 候选词横排：true；false
     candidate_list_layout: linear # 新式字段：linear（横排）| stacked（竖排），Squirrel 1.0+
     text_orientation: horizontal  # 文字方向：horizontal | vertical
@@ -23,7 +26,7 @@ patch:
     hilited_corner_radius: 4.0
     base_offset: -0.2
     border_height: 0.25
-    border_width: 0.25
+    border_width: 8 # 加大候选栏左右留白，让首尾候选不贴边
     border_color_width: 0.0
     line_spacing: 1.0
     color_space: display_p3
