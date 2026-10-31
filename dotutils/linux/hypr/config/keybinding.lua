@@ -17,30 +17,11 @@ local closeWindowBind = hl.bind(mainMod .. " + Q", hl.dsp.window.close())
 -- )
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + Shift + F", hl.dsp.window.fullscreen({ action = "toggle" }))
--- 默认：给所有窗口发送 Ctrl+C / Ctrl+V
-hl.bind(mainMod .. " + C", hl.dsp.send_shortcut({ mods = "CTRL", key = "C" }))
-hl.bind(mainMod .. " + V", hl.dsp.send_shortcut({ mods = "CTRL", key = "V" }))
 
+hl.bind(mainMod .. " + C", hl.dsp.exec_cmd("~/.config/hypr/scripts/clipboard.sh c"))
+hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("~/.config/hypr/scripts/clipboard.sh v"))
 hl.bind(mainMod .. " + A", hl.dsp.send_shortcut({ mods = "CTRL", key = "A" }))
 
--- 覆盖：给 Kitty 发送 Ctrl+Shift+C / Ctrl+Shift+V
--- 注意：后定义的绑定会覆盖先前的同名键，这里相当于“Kitty 专属规则”
-hl.bind(
-	mainMod .. " + C",
-	hl.dsp.send_shortcut({
-		mods = "CTRL SHIFT",
-		key = "C",
-		window = "class:(kitty)",
-	})
-)
-hl.bind(
-	mainMod .. " + V",
-	hl.dsp.send_shortcut({
-		mods = "CTRL SHIFT",
-		key = "V",
-		window = "class:(kitty)",
-	})
-)
 hl.bind("ALT + Tab", hl.dsp.window.cycle_next())
 hl.bind(mainMod .. " + R", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo())
@@ -55,9 +36,9 @@ hl.bind(mainMod .. " + down", hl.dsp.focus({ direction = "down" }))
 -- Switch workspaces with mainMod + [0-9]
 -- Move active window to a workspace with mainMod + SHIFT + [0-9]
 for i = 1, 10 do
-	local key = i % 10 -- 10 maps to key 0
-	hl.bind(mainMod .. " + " .. key, hl.dsp.focus({ workspace = i }))
-	hl.bind(mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }))
+    local key = i % 10 -- 10 maps to key 0
+    hl.bind(mainMod .. " + " .. key, hl.dsp.focus({ workspace = i }))
+    hl.bind(mainMod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }))
 end
 
 -- Example special workspace (scratchpad)
@@ -74,24 +55,24 @@ hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
 -- Laptop multimedia keys for volume and LCD brightness
 hl.bind(
-	"XF86AudioRaiseVolume",
-	hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"),
-	{ locked = true, repeating = true }
+    "XF86AudioRaiseVolume",
+    hl.dsp.exec_cmd("wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+"),
+    { locked = true, repeating = true }
 )
 hl.bind(
-	"XF86AudioLowerVolume",
-	hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),
-	{ locked = true, repeating = true }
+    "XF86AudioLowerVolume",
+    hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),
+    { locked = true, repeating = true }
 )
 hl.bind(
-	"XF86AudioMute",
-	hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),
-	{ locked = true, repeating = true }
+    "XF86AudioMute",
+    hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),
+    { locked = true, repeating = true }
 )
 hl.bind(
-	"XF86AudioMicMute",
-	hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),
-	{ locked = true, repeating = true }
+    "XF86AudioMicMute",
+    hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),
+    { locked = true, repeating = true }
 )
 hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"), { locked = true, repeating = true })
 hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"), { locked = true, repeating = true })
@@ -101,3 +82,30 @@ hl.bind("XF86AudioNext", hl.dsp.exec_cmd("playerctl next"), { locked = true })
 hl.bind("XF86AudioPause", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
 hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = true })
 hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), { locked = true })
+
+-- 将当前窗口“最小化”到特殊工作区，再按一次则恢复
+hl.bind("SUPER + H", function()
+    -- 检查特殊工作区是否已存在（即已有最小化的窗口）
+    if hl.get_workspace("special:minimized") then
+        -- 恢复：将带 "minimized" 标签的窗口移回当前工作区，并清除标签
+        hl.dispatch(hl.dsp.window.move({
+            workspace = hl.get_active_workspace(),
+            window = "tag:minimized",
+        }))
+        hl.dispatch(hl.dsp.window.clear_tags({ window = "tag:minimized" }))
+    else
+        -- 最小化：给当前窗口打上标签，并移动到特殊工作区（不跟随切换）
+        hl.dispatch(hl.dsp.window.tag({
+            tag = "minimized",
+            window = hl.get_active_window(),
+        }))
+        hl.dispatch(hl.dsp.window.move({
+            workspace = "special:minimized",
+            follow = false,
+        }))
+    end
+end)
+
+hl.bind("F1", hl.dsp.exec_cmd("omasnap --editor=overlay"), { description = "Screenshot" })
+-- hl.bind("F1", hl.dsp.exec_cmd("caelestia screenshot --region --freeze"), { description = "Region Screenshot" })
+hl.bind("F2", hl.dsp.exec_cmd("caelestia clipboard"), { description = "Clipboard History" })
