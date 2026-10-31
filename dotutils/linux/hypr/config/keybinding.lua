@@ -106,6 +106,23 @@ hl.bind("SUPER + H", function()
     end
 end)
 
-hl.bind("F1", hl.dsp.exec_cmd("omasnap --editor=overlay"), { description = "Screenshot" })
+-- hl.bind("F1", hl.dsp.exec_cmd("omasnap --editor=overlay"), { description = "Screenshot" })
 -- hl.bind("F1", hl.dsp.exec_cmd("caelestia screenshot --region --freeze"), { description = "Region Screenshot" })
+hl.bind("F1", function()
+    local mon = hl.get_active_monitor()
+    local n = mon and mon.id or 0
+    hl.exec_cmd("flameshot screen --number " .. n .. " --edit")
+end, {
+    description = "Flameshot Screenshot",
+})
+hl.window_rule({
+    match = { class = "flameshot" },
+    no_anim = true,
+    pin = true,
+    float = true,
+    decorate = false,
+    no_blur = true,
+    no_shadow = true,
+})
 hl.bind("F2", hl.dsp.exec_cmd("caelestia clipboard"), { description = "Clipboard History" })
+hl.bind(mainMod .. " + L", hl.dsp.global("caelestia:lock"))
