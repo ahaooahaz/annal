@@ -4,6 +4,26 @@
             "complex_modifications": {
                 "rules": [
                     {
+                        "description": "Custom key binding: toggle kitty quick-access-terminal with F1",
+                        "manipulators": [
+                            {
+                                "from": {
+                                    "key_code": "f1",
+                                    "modifiers": {
+                                        "optional": ["fn"]
+                                    }
+                                },
+                                "to": [
+                                    {
+                                        "shell_command": "cd \"$HOME\" && /usr/bin/nohup /Applications/kitty.app/Contents/MacOS/kitten quick-access-terminal </dev/null >/dev/null 2>&1 &",
+                                        "repeat": false
+                                    }
+                                ],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
                         "description": "Custom key binding: focus kitty with Ctrl+T",
                         "manipulators": [
                             {
