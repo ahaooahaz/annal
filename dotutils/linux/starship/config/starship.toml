@@ -11,17 +11,6 @@ $directory\
 $git_branch\
 $git_status\
 [](fg:color_aqua bg:color_blue)\
-$c\
-$cpp\
-$rust\
-$golang\
-$nodejs\
-$bun\
-$php\
-$java\
-$kotlin\
-$haskell\
-$python\
 [](fg:color_blue bg:color_bg3)\
 $docker_context\
 $conda\
@@ -112,7 +101,7 @@ format = '[[ $symbol $branch ](fg:color_fg0 bg:color_aqua)]($style)'
 
 [git_status]
 style = "bg:color_aqua"
-format = '[[($all_status$ahead_behind )](fg:color_fg0 bg:color_aqua)]($style)'
+format = '[[($all_status$ahead_behind )](fg:color_red bg:color_aqua)]($style)'
 
 [nodejs]
 symbol = ""
