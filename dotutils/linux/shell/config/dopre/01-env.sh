@@ -42,25 +42,27 @@ include -f "${HOME}/.inti_envrc"
 # Golang env.
 ZGOPATH="$HOME/dev/go"
 if [[ -s "$HOME/.gvm/scripts/gvm" ]]; then
-    # shellcheck source=/dev/null
-    source "$HOME/.gvm/scripts/gvm" && unset -f cd
+    if [[ ${_shell_gvm_loaded-0} != 1 ]]; then
+        _shell_lazy_register gvmsetup gvm go gofmt && _shell_gvm_lazy_enabled=1
+    fi
 else
     export GOPATH=$ZGOPATH
-    add_to PATH "$HOME/.local/go/bin"
+    environment_add PATH 0 "$HOME/.local/go/bin" "$GOPATH/bin"
 fi
 
 # nvm env.
 NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
-# shellcheck source=/dev/null
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+if [[ -s "$NVM_DIR/nvm.sh" && ${_shell_nvm_loaded-0} != 1 ]]; then
+    _shell_lazy_register nvmsetup nvm node npm npx corepack yarn yarnpkg pnpm pnpx && _shell_nvm_lazy_enabled=1
+fi
 
 # runtime env.
-add_to PATH /usr/local/bin "$HOME/.local/bin" "$HOME/.local/scripts" "$GOPATH/bin" "$HOME/.cargo/bin" "$HOME/.local/cmake/bin"
+environment_add PATH 0 "$HOME/.local/bin" "$HOME/.local/scripts" "$HOME/.cargo/bin" "$HOME/.local/cmake/bin"
 if [[ "${CURROS}" == "Darwin" ]]; then
-    add_to PATH "/opt/homebrew/sbin" "/opt/homebrew/bin"
-    add_to DYLD_FALLBACK_LIBRARY_PATH "/opt/homebrew/lib"
+    environment_add PATH 10 "/opt/homebrew/bin"
+    environment_add DYLD_FALLBACK_LIBRARY_PATH 0 "/opt/homebrew/lib"
 fi
 
 if [[ -d "$HOME/.local/share/bob" ]]; then
-    add_to PATH "$HOME/.local/share/bob/nvim-bin"
+    environment_add PATH 0 "$HOME/.local/share/bob/nvim-bin"
 fi
