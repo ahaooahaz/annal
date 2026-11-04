@@ -1,84 +1,67 @@
-import datetime
+from kitty.tab_bar import draw_tab_with_powerline, as_rgb
+from kitty.fast_data_types import Screen, Color
 
-from kitty.boss import get_boss
-from kitty.fast_data_types import Screen, add_timer
-from kitty.tab_bar import (
-    DrawData,
-    ExtraData,
-    Formatter,
-    TabBarData,
-    as_rgb,
-    draw_attributed_string,
-    draw_tab_with_powerline
-)
+# ---- Catppuccin Mocha --------------------------------------------------
+BASE = 0x1E1E2E
+CRUST = 0x11111B
+TEXT = 0x364153
+BLACK = 0x000000
 
-timer_id = None
-EN_MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
+PALETTE = [
+    0xF38BA8,  # red
+    0xFAB387,  # peach
+    0xF9E2AF,  # yellow
+    0xA6E3A1,  # green
+    0x94E2D5,  # teal
+    0x89DCEB,  # sky
+    0x89B4FA,  # blue
+    0xCBA6F7,  # mauve
+    0xF5C2E7,  # pink
+    0xB4BEFE,  # lavender
+]
+# -------------------------------------------------------------------------
+
+
+def hexcolor(h):
+    return Color((h >> 16) & 0xFF, (h >> 8) & 0xFF, h & 0xFF)
+
 
 def draw_tab(
-    draw_data: DrawData,
+    draw_data,
     screen: Screen,
-    tab: TabBarData,
-    before: int,
-    max_title_length: int,
-    index: int,
-    is_last: bool,
-    extra_data: ExtraData,
-) -> int:
-    global timer_id
+    tab,
+    before,
+    max_title_length,
+    index,
+    is_last,
+    extra_data,
+):
+    cur_color = PALETTE[(index - 1) % len(PALETTE)]
+    next_color = PALETTE[index % len(PALETTE)] if not is_last else BASE
+    fg_color = BASE if not tab.is_active else CRUST
 
-    # if timer_id is None:
-    #     timer_id = add_timer(_redraw_tab_bar, 2.0, True)
-    draw_tab_with_powerline(
-        draw_data, screen, tab, before, max_title_length, index, is_last, extra_data
+    # Plain text logo before first tab
+    if index == 1:
+        screen.cursor.bg = as_rgb(cur_color)
+        screen.cursor.fg = as_rgb(TEXT)
+        screen.cursor.bold = True
+        screen.draw(" 󰄛 ")
+
+    screen.cursor.bg = as_rgb(cur_color)
+    screen.cursor.fg = as_rgb(fg_color)
+    screen.cursor.bold = tab.is_active
+
+    draw_data = draw_data._replace(
+        active_bg=hexcolor(next_color),
+        inactive_bg=hexcolor(next_color),
     )
-    if is_last:
-        draw_right_status(draw_data, screen)
-    return screen.cursor.x
-
-
-def draw_right_status(draw_data: DrawData, screen: Screen) -> None:
-    # The tabs may have left some formats enabled. Disable them now.
-    draw_attributed_string(Formatter.reset, screen)
-    cells = create_cells()
-    # Drop cells that wont fit
-    while True:
-        if not cells:
-            return
-        padding = screen.columns - screen.cursor.x - sum(len(c) + 3 for c in cells)
-        if padding >= 0:
-            break
-        cells = cells[1:]
-
-    if padding:
-        screen.draw(" " * padding)
-
-    tab_bg = as_rgb(int(draw_data.inactive_bg))
-    tab_fg = as_rgb(int(draw_data.inactive_fg))
-    default_bg = as_rgb(int(draw_data.default_bg))
-    for cell in cells:
-        # Draw the separator
-        if cell == cells[0]:
-            screen.cursor.fg = tab_bg
-            # screen.draw("")
-            screen.draw("")
-        else:
-            screen.cursor.fg = default_bg
-            screen.cursor.bg = tab_bg
-            screen.draw("")
-        screen.cursor.fg = tab_fg
-        screen.cursor.bg = tab_bg
-        screen.draw(f" {cell} ")
-
-def create_cells() -> list[str]:
-    now = datetime.datetime.now()
-    month = EN_MONTHS[now.month - 1]
-    return [
-        f"{now.day:02d} {month}",
-        now.strftime("%H:%M"),
-    ]
-
-
-def _redraw_tab_bar(timer_id):
-    for tm in get_boss().all_tab_managers:
-        tm.mark_tab_bar_dirty()
+    return draw_tab_with_powerline(
+        draw_data,
+        screen,
+        tab,
+        before,
+        max_title_length,
+        index,
+        is_last,
+        extra_data,
+    )
