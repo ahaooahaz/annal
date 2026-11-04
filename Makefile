@@ -1,26 +1,35 @@
-MAKEFLAGS += -s
-ROOT_DIR := $(CURDIR)
-COMMANDS = install uninstall upgrade prune
+.DEFAULT_GOAL := install
 
-mk = linux
-ifeq ($(OS),Windows_NT)
-	mk := windows
-else
-UNAME_S := $(shell uname -s)
-ifeq ($(UNAME_S),Linux)
-    mk := linux
-format:
-	git ls-files | grep -E '\.(sh|zsh)$$' | xargs -I {} shfmt -w {}
-else ifeq ($(UNAME_S),Darwin)
-    mk := darwin
-endif
-endif
+ROOT_DIR := $(realpath $(dir $(lastword $(MAKEFILE_LIST))))
+include $(ROOT_DIR)/mk/platform.mk
 
-TARGETS = $(notdir $(patsubst %/,%,$(wildcard dotutils/$(mk)/*/)))
+# Only directories with a Makefile are modules (including Darwin symlinks).
+TARGETS ?= $(notdir $(patsubst %/Makefile,%,$(wildcard $(ROOT_DIR)/dotutils/$(PLATFORM)/*/Makefile)))
 
-$(COMMANDS):
-	echo "$@ plugins: $(TARGETS)"
+.PHONY: install uninstall prune upgrade test format
+.NOTPARALLEL:
+
+install uninstall prune:
 	@set -e; for target in $(TARGETS); do \
-		echo "$@ing $$target..."; \
-		$(MAKE) -C dotutils/$(mk)/$$target $@; \
+		if [ ! -f "$(ROOT_DIR)/dotutils/$(PLATFORM)/$$target/Makefile" ]; then \
+			printf 'Unknown module: %s/%s\n' "$(PLATFORM)" "$$target" >&2; exit 1; \
+		fi; \
+	done; \
+	if [ -z "$(strip $(TARGETS))" ]; then \
+		printf 'No modules with a Makefile for platform %s\n' "$(PLATFORM)"; \
+	fi; \
+	for target in $(TARGETS); do \
+		printf '\n%s: %s/%s\n' "$@" "$(PLATFORM)" "$$target"; \
+		$(MAKE) --no-print-directory -C "$(ROOT_DIR)/dotutils/$(PLATFORM)/$$target" PLATFORM="$(PLATFORM)" $@; \
 	done
+
+# One scan covers Annal, every platform, and undeclared/nested plugin repos.
+# Do not dispatch this to modules: Darwin aliases would update repos twice.
+upgrade:
+	@/bin/bash "$(ROOT_DIR)/mk/dotutils.sh" upgrade "$(ROOT_DIR)"
+
+test:
+	@/bin/bash "$(ROOT_DIR)/tests/makefile_test.sh"
+
+format:
+	@cd "$(ROOT_DIR)" && git ls-files -z -- '*.sh' '*.bash' '*.zsh' | xargs -0 shfmt -w
