@@ -33,9 +33,18 @@ $character"""
 
 palette = 'gruvbox_dark'
 
-# Keep only the prompt character when Zsh submits a command line.
+# Keep only a gray prompt character when Zsh submits a command line.
 [profiles]
-transient = '$character'
+transient = """
+[](color_orange)\
+$os\
+[](bg:color_yellow fg:color_orange)\
+[](fg:color_yellow bg:color_aqua)\
+[](fg:color_aqua bg:color_blue)\
+[](fg:color_blue bg:color_bg3)\
+[](fg:color_bg3 bg:color_bg1)\
+[ ](fg:color_bg1)\
+$character"""
 
 [palettes.gruvbox_dark]
 color_fg0 = '#fbf1c7'
@@ -193,9 +202,9 @@ disabled = false
 
 [character]
 disabled = false
-success_symbol = '[](bold fg:color_green)'
-error_symbol = '[](bold fg:color_red)'
-vimcmd_symbol = '[](bold fg:color_green)'
-vimcmd_replace_one_symbol = '[](bold fg:color_purple)'
-vimcmd_replace_symbol = '[](bold fg:color_purple)'
-vimcmd_visual_symbol = '[](bold fg:color_yellow)'
+success_symbol = '[→](bold fg:color_green)'
+error_symbol = '[→](bold fg:color_red)'
+vimcmd_symbol = '[←](bold fg:color_green)'
+vimcmd_replace_one_symbol = '[←](bold fg:color_purple)'
+vimcmd_replace_symbol = '[←](bold fg:color_purple)'
+vimcmd_visual_symbol = '[←](bold fg:color_yellow)'
