@@ -1,6 +1,71 @@
 {
+    "appearance": {
+        "transparency": {
+            "enabled": true
+        }
+    },
+    "bar": {
+        "activeWindow": {
+            "showOnHover": true
+        },
+        "clock": {
+            "background": true,
+            "showDate": true,
+            "showSeconds": true
+        },
+        "dragThreshold": 20,
+        "scrollActions": {
+            "workspaces": true
+        },
+        "showOnHover": true,
+        "statusIcons": [
+            {
+                "enabled": true,
+                "id": "lockStatus"
+            },
+            {
+                "enabled": false,
+                "id": "audio"
+            },
+            {
+                "enabled": false,
+                "id": "microphone"
+            },
+            {
+                "enabled": false,
+                "id": "kbLayout"
+            },
+            {
+                "enabled": true,
+                "id": "network"
+            },
+            {
+                "enabled": true,
+                "id": "bluetooth"
+            },
+            {
+                "enabled": true,
+                "id": "battery"
+            }
+        ],
+        "workspaces": {
+            "activeIndicator": true,
+            "activeTrail": true,
+            "perMonitor": true,
+            "showUnoccupied": true,
+            "showWindows": false,
+            "showWindowsOnSpecialWorkspaces": true
+        }
+    },
+    "dashboard": {
+        "showClockSeconds": true
+    },
     "general": {
         "apps": {
+            "playback": [
+                "/usr/bin/vlc",
+                "--started-from-file"
+            ],
             "terminal": [
                 "kitty"
             ]
@@ -28,5 +93,9 @@
                 }
             ]
         }
+    },
+    "services": {
+        "defaultPlayer": "NetEase Cloud Music Gtk4",
+        "weatherUnits": "Celsius"
     }
 }
