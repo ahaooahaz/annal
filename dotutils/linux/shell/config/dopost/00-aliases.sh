@@ -5,7 +5,7 @@ if [[ "${CURROS}" == "Darwin" ]]; then
     alias make='gmake'
     alias timeout='gtimeout'
     if [[ -d "/opt/homebrew/opt/binutils/bin" ]]; then
-        add_to PATH "/opt/homebrew/opt/binutils/bin"
+        environment_add PATH 0 "/opt/homebrew/opt/binutils/bin"
     fi
 fi
 
