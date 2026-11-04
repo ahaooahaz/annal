@@ -3,8 +3,6 @@ export CURRSHELL=zsh
 #=====================#
 #     Zsh config      #
 #=====================#
-# P10k Instant Prompt
-include -f "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 
 # Plugins
 if [[ ! -f ${ZDOTDIR:-${HOME}}/.zcomet/bin/zcomet.zsh ]]; then
@@ -58,11 +56,26 @@ __zoxide_z_complete() {
 zcomet load ohmyzsh plugins/git
 zcomet load tj/git-extras etc git-extras-completion.zsh
 
-AUTOPAIR_INIT_INHIBIT=1
+# Initialize only in after_init, after the keymaps have been set up.
+AUTOPAIR_INHIBIT_INIT=1
 zcomet load hlissner/zsh-autopair
 
-zcomet load romkatv/powerlevel10k
+# zcomet load romkatv/powerlevel10k
 zcomet load trapd00r/LS_COLORS
+
+# Register before syntax highlighting wraps the shared ZLE hook dispatcher.
+# Registering afterwards can make add-zle-hook-widget wrap its own dispatcher.
+function starship_transient_prompt() {
+    emulate -L zsh
+    [[ $CONTEXT == start ]] || return 0
+    local PROMPT='$(starship prompt --profile transient --status="${STARSHIP_CMD_STATUS:-0}" --keymap="${KEYMAP:-viins}")'
+    local RPROMPT=''
+    zle .reset-prompt
+    # Flush the redraw before the local prompts are restored on return.
+    zle -R
+}
+autoload -Uz add-zle-hook-widget
+add-zle-hook-widget line-finish starship_transient_prompt
 
 zcomet load zdharma-continuum/fast-syntax-highlighting
 
@@ -131,7 +144,7 @@ setopt COMBINING_CHARS
 setopt nullglob
 export GPG_TTY="${TTY:-$(tty)}"
 
-include -f "${ZDOTDIR:-${HOME}}/.p10k.zsh"
+eval "$(starship init zsh)"
 
 #=====================#
 #   Zsh config end    #
