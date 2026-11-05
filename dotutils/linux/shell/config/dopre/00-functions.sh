@@ -264,7 +264,7 @@ function _shell_completion_load() {
     # Sourcing (rather than eval) confines any top-level return to the script.
     # No generic local names such as words/cur shadow the completion context.
     # shellcheck source=/dev/null
-    source /dev/stdin <<< "$_shell_completion_script" || _shell_completion_result=$?
+    source /dev/stdin <<<"$_shell_completion_script" || _shell_completion_result=$?
     if [[ $_shell_completion_result == 0 ]] && declare -f "$_shell_completion_function" >/dev/null; then
         if [[ -n ${ZSH_VERSION-} ]]; then
             [[ ${_comps[$_shell_completion_command]-} == "$_shell_completion_function" ]] || _shell_completion_result=1

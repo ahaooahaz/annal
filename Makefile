@@ -28,8 +28,5 @@ install uninstall prune:
 upgrade:
 	@/bin/bash "$(ROOT_DIR)/mk/dotutils.sh" upgrade "$(ROOT_DIR)"
 
-test:
-	@/bin/bash "$(ROOT_DIR)/tests/makefile_test.sh"
-
 format:
 	@cd "$(ROOT_DIR)" && git ls-files -z -- '*.sh' '*.bash' '*.zsh' | xargs -0 shfmt -w
