@@ -9,7 +9,7 @@ $os\
 $directory\
 [](fg:color_yellow bg:color_aqua)\
 $git_branch\
-$git_status\
+${custom.git_status}\
 [](fg:color_aqua bg:color_blue)\
 [](fg:color_blue bg:color_bg3)\
 $docker_context\
@@ -17,8 +17,11 @@ $conda\
 $pixi\
 [](fg:color_bg3 bg:color_bg1)\
 $time\
-[ ](fg:color_bg1)\
+[ ](fg:color_bg1)\
 $character"""
+
+right_format = """\
+"""
 
 palette = 'gruvbox_dark'
 
@@ -99,9 +102,24 @@ symbol = ""
 style = "bg:color_aqua"
 format = '[[ $symbol $branch ](fg:color_fg0 bg:color_aqua)]($style)'
 
+# Raw native status is the fallback when gitstatusd is unavailable.
 [git_status]
+format = '$all_status$ahead_behind'
+
+[custom.git_status]
+description = 'Asynchronous gitstatusd status, with a native Starship fallback'
+when = true
+shell = ['sh']
+command = '''
+if [ "$STARSHIP_SHELL" = zsh ] && [ "$STARSHIP_GITSTATUS_READY" = 1 ] &&
+   [ "$STARSHIP_GITSTATUS_CONTEXT" = "$PWD:${GIT_DIR-}:${GIT_WORK_TREE-}" ]; then
+    printf '%s' "$STARSHIP_GITSTATUS"
+else
+    starship module git_status
+fi
+'''
 style = "bg:color_aqua"
-format = '[[($all_status$ahead_behind )](fg:color_red bg:color_aqua)]($style)'
+format = '[[($output )](fg:color_red bg:color_aqua)]($style)'
 
 [nodejs]
 symbol = ""

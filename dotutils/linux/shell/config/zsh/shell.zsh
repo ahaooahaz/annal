@@ -158,6 +158,7 @@ setopt nullglob
 export GPG_TTY="${TTY:-$(tty)}"
 
 eval "$(starship init zsh)"
+starship_gitstatus_init
 
 #=====================#
 #   Zsh config end    #
