@@ -26,6 +26,11 @@ function after_init() {
     if command -v fzf >/dev/null 2>&1; then
         source <(fzf --zsh)
     fi
+    # Capture the existing Tab widget only after vi-mode and fzf initialize.
+    # fz handles z/zz and delegates other commands to the previous widget.
+    zcomet load changyuheng/fz
+    bindkey -M emacs '^I' __fz_zsh_completion
+    bindkey -M viins '^I' __fz_zsh_completion
 }
 
 zcomet load romkatv/zsh-defer
@@ -45,17 +50,26 @@ zcomet load ohmyzsh lib {completion,clipboard,git}.zsh
 HISTORY_SUBSTRING_SEARCH_ENSURE_UNIQUE=1
 zcomet load ohmyzsh plugins/history
 zcomet load ohmyzsh plugins/history-substring-search
-
-zcomet load ohmyzsh plugins/zoxide # NOTE: need install zoxide first.
-__zoxide_z_complete() {
-    local -a dirs
-    dirs=(${(f)"$(zoxide query -l)"})
-    _describe 'zoxide dirs' dirs
-}
-
 zcomet load ohmyzsh plugins/git
 zcomet load tj/git-extras etc git-extras-completion.zsh
 
+# z.lua owns the directory history; fz owns z/zz's interactive completion.
+export _ZL_ZSH_NO_FZF=1
+export _ZL_NO_ALIASES=1
+export _ZL_HYPHEN=1
+FZ_HISTORY_CD_CMD=_zlua
+FZ_CMD=z
+FZ_SUBDIR_CMD=zz
+FZ_SUBDIR_TRAVERSAL=1
+FZ_CASE_INSENSITIVE=1
+zcomet load skywind3000/z.lua
+
+# Call the backend directly instead of fz's history-first cd wrapper.
+alias zi='_zlua -i'
+alias zf='_zlua -I'
+alias zc='_zlua -c'
+alias zb='_zlua -b'
+alias zh='_zlua -I -t .'
 # Initialize only in after_init, after the keymaps have been set up.
 AUTOPAIR_INHIBIT_INIT=1
 zcomet load hlissner/zsh-autopair
@@ -80,7 +94,7 @@ add-zle-hook-widget line-finish starship_transient_prompt
 zcomet load zdharma-continuum/fast-syntax-highlighting
 
 zcomet compinit
-compdef __zoxide_z_complete z
+compdef _zlua_zsh_tab_completion _zlua _fz _fzz z zz
 
 # NOTE: zstyle must behind compinit.
 zcomet load Aloxaf/fzf-tab
@@ -104,7 +118,6 @@ else
     || cat -- "$realpath" | head -500
 fi
 '
-zstyle ':completion:*:__zoxide_z:*' sort false
 
 # Configs
 # zsh misc

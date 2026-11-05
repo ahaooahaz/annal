@@ -18,14 +18,20 @@ export FZF_DEFAULT_OPTS="
 --layout reverse
 --sort
 --preview '
-if [ -d {} ]; then
-    tree -N -C -- {} | head -500
-elif file --mime -- {} | grep -q image; then
-    mcat -- {} --ascii
+preview_path={}
+# fzf quotes placeholders, so expand the abbreviated home path explicitly.
+case \"\$preview_path\" in
+    \"~\") preview_path=\"\$HOME\" ;;
+    \"~/\"*) preview_path=\"\$HOME/\${preview_path#??}\" ;;
+esac
+if [ -d \"\$preview_path\" ]; then
+    tree -N -C -- \"\$preview_path\" | head -500
+elif file --mime -- \"\$preview_path\" | grep -q image; then
+    mcat -- \"\$preview_path\" --ascii
 else
-    bat --style=numbers --color=always -- {} 2>/dev/null \
-    || highlight -O ansi -l -- {} 2>/dev/null \
-    || cat -- {} | head -500
+    bat --style=numbers --color=always -- \"\$preview_path\" 2>/dev/null \
+    || highlight -O ansi -l -- \"\$preview_path\" 2>/dev/null \
+    || cat -- \"\$preview_path\" | head -500
 fi
 '
 --preview-window right:50%:wrap
