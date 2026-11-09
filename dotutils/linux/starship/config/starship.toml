@@ -3,9 +3,9 @@
 add_newline = false
 
 format = """
-[](color_orange)\
+[](color_green)\
 $os\
-[](bg:color_yellow fg:color_orange)\
+[](bg:color_yellow fg:color_green)\
 $directory\
 [](fg:color_yellow bg:color_aqua)\
 $git_branch\
@@ -28,9 +28,9 @@ palette = 'gruvbox_dark'
 # Keep only a gray prompt character when Zsh submits a command line.
 [profiles]
 transient = """
-[](color_orange)\
+[](color_green)\
 $os\
-[](bg:color_yellow fg:color_orange)\
+[](bg:color_yellow fg:color_green)\
 [](fg:color_yellow bg:color_aqua)\
 [](fg:color_aqua bg:color_blue)\
 [](fg:color_blue bg:color_bg3)\
@@ -52,7 +52,7 @@ color_yellow = '#d79921'
 
 [os]
 disabled = false
-style = "bg:color_orange fg:color_fg0"
+style = "bg:color_green fg:color_fg0"
 
 [os.symbols]
 Windows = "󰍲 "
@@ -209,9 +209,9 @@ disabled = false
 
 [character]
 disabled = false
-success_symbol = '[→](bold fg:color_green)'
-error_symbol = '[→](bold fg:color_red)'
-vimcmd_symbol = '[←](bold fg:color_green)'
-vimcmd_replace_one_symbol = '[←](bold fg:color_purple)'
-vimcmd_replace_symbol = '[←](bold fg:color_purple)'
-vimcmd_visual_symbol = '[←](bold fg:color_yellow)'
+success_symbol = '[>](bold fg:color_green)'
+error_symbol = '[>](bold fg:color_red)'
+vimcmd_symbol = '[<](bold fg:color_green)'
+vimcmd_replace_one_symbol = '[<](bold fg:color_purple)'
+vimcmd_replace_symbol = '[<](bold fg:color_purple)'
+vimcmd_visual_symbol = '[<](bold fg:color_yellow)'

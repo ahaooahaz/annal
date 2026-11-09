@@ -4,9 +4,6 @@
 if [[ "${CURROS}" == "Darwin" ]]; then
     alias make='gmake'
     alias timeout='gtimeout'
-    if [[ -d "/opt/homebrew/opt/binutils/bin" ]]; then
-        environment_add PATH 0 "/opt/homebrew/opt/binutils/bin"
-    fi
 fi
 
 if command -v nvim &>/dev/null; then

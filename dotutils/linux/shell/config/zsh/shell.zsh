@@ -10,38 +10,45 @@ if [[ ! -f ${ZDOTDIR:-${HOME}}/.zcomet/bin/zcomet.zsh ]]; then
 fi
 include -f "${HOME}/.zcomet/bin/zcomet.zsh"
 
-# see issue: https://github.com/jeffreytse/zsh-vi-mode/issues/4
+# Initialize once at the first prompt, after all configuration has been sourced.
 function after_init() {
+    add-zsh-hook -d precmd after_init
+    eval "$(starship init zsh)"
+    starship_gitstatus_init
+
     autopair-init
-    # NOTE: custom bindkeys.
-    # unbind <C_s> for kitty leader key.
-    bindkey -M vicmd -r '^D'          # unbind <Ctrl-D> in vicmd mode.
-    bindkey -M viins -r '^D'          # unbind <Ctrl-D> in viins mode.
-    bindkey -M viins '^D' delete-char # bind <Ctrl-D> in viins mode, delete-char.
-    bindkey -M viins '^Z' undo        # [Ctrl-Z]
-    bindkey -M vicmd -r '^S'
-    bindkey -M viins -r '^S'
-    bindkey '^[[A' history-substring-search-up
-    bindkey '^[[B' history-substring-search-down
+    # Keep terminal shortcuts on the default emacs keymap.
+    # Ctrl-S is reserved for Kitty's leader key.
+    bindkey -M emacs '^D' delete-char
+    bindkey -M emacs '^Z' undo
+    bindkey -M emacs -r '^S'
+    bindkey -M emacs '^[[A' history-substring-search-up
+    bindkey -M emacs '^[[B' history-substring-search-down
     if command -v fzf >/dev/null 2>&1; then
         source <(fzf --zsh)
     fi
-    # Capture the existing Tab widget only after vi-mode and fzf initialize.
+
+    # z.lua owns the directory history; fz owns z/zz's interactive completion.
+    export _ZL_ZSH_NO_FZF=1
+    export _ZL_NO_ALIASES=1
+    export _ZL_HYPHEN=1
+    FZ_HISTORY_CD_CMD=_zlua
+    FZ_CMD=z
+    FZ_SUBDIR_CMD=zz
+    FZ_SUBDIR_TRAVERSAL=1
+    FZ_CASE_INSENSITIVE=1
+    zcomet load skywind3000/z.lua
+    # Capture the existing Tab widget after fzf initializes.
     # fz handles z/zz and delegates other commands to the previous widget.
     zcomet load changyuheng/fz
+    compdef _zlua_zsh_tab_completion _zlua _fz _fzz z zz
     bindkey -M emacs '^I' __fz_zsh_completion
-    bindkey -M viins '^I' __fz_zsh_completion
 }
 
-zcomet load romkatv/zsh-defer
-if [[ -n "$NVIM" ]]; then
-    bindkey -e # 使用 emacs 模式（即默认模式）
-    zsh-defer after_init
-else
-    ZVM_SYSTEM_CLIPBOARD_ENABLED=true
-    zcomet load jeffreytse/zsh-vi-mode
-    zvm_after_init_commands+=(after_init)
-fi
+# Use Zsh's native emacs editing instead of loading zsh-vi-mode.
+bindkey -e
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd after_init
 
 zcomet load ohmyzsh lib {completion,clipboard,git}.zsh
 #zcomet load ohmyzsh plugins/autojump
@@ -53,24 +60,7 @@ zcomet load ohmyzsh plugins/history-substring-search
 zcomet load ohmyzsh plugins/git
 zcomet load tj/git-extras etc git-extras-completion.zsh
 
-# z.lua owns the directory history; fz owns z/zz's interactive completion.
-export _ZL_ZSH_NO_FZF=1
-export _ZL_NO_ALIASES=1
-export _ZL_HYPHEN=1
-FZ_HISTORY_CD_CMD=_zlua
-FZ_CMD=z
-FZ_SUBDIR_CMD=zz
-FZ_SUBDIR_TRAVERSAL=1
-FZ_CASE_INSENSITIVE=1
-zcomet load skywind3000/z.lua
-
-# Call the backend directly instead of fz's history-first cd wrapper.
-alias zi='_zlua -i'
-alias zf='_zlua -I'
-alias zc='_zlua -c'
-alias zb='_zlua -b'
-alias zh='_zlua -I -t .'
-# Initialize only in after_init, after the keymaps have been set up.
+# Initialize in after_init, once plugin loading and environment setup are complete.
 AUTOPAIR_INHIBIT_INIT=1
 zcomet load hlissner/zsh-autopair
 
@@ -82,7 +72,7 @@ zcomet load trapd00r/LS_COLORS
 function starship_transient_prompt() {
     emulate -L zsh
     [[ $CONTEXT == start ]] || return 0
-    local PROMPT='$(starship prompt --profile transient --status="${STARSHIP_CMD_STATUS:-0}" --keymap="${KEYMAP:-viins}")'
+    local PROMPT='$(starship prompt --profile transient --status="${STARSHIP_CMD_STATUS:-0}" --keymap="${KEYMAP:-emacs}")'
     local RPROMPT=''
     zle .reset-prompt
     # Flush the redraw before the local prompts are restored on return.
@@ -94,7 +84,6 @@ add-zle-hook-widget line-finish starship_transient_prompt
 zcomet load zdharma-continuum/fast-syntax-highlighting
 
 zcomet compinit
-compdef _zlua_zsh_tab_completion _zlua _fz _fzz z zz
 
 # NOTE: zstyle must behind compinit.
 zcomet load Aloxaf/fzf-tab
@@ -157,8 +146,10 @@ setopt COMBINING_CHARS
 setopt nullglob
 export GPG_TTY="${TTY:-$(tty)}"
 
-eval "$(starship init zsh)"
-starship_gitstatus_init
+if ! command -v mise >/dev/null 2>&1; then
+    curl -fsSL https://mise.run | sh
+fi
+eval "$(mise activate zsh)"
 
 #=====================#
 #   Zsh config end    #

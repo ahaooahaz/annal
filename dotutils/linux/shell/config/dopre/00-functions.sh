@@ -77,10 +77,6 @@ function isnum() {
     return 0
 }
 
-function ssht() {
-    ssh -t "$@" "tmux attach || tmux new"
-}
-
 function condasetup() {
     if __conda_setup="$("$HOME/.miniconda3/bin/conda" "shell.${CURRSHELL}" hook 2>/dev/null)"; then
         eval "$__conda_setup"
@@ -94,31 +90,6 @@ function condasetup() {
     fi
     unset __conda_setup
 }
-
-# Prepare lazy runtimes even when the caller bypasses their wrapper functions.
-# Options such as -v/-V (lookup) and -p (default PATH) pass through unchanged.
-# Keep Bash's native command: Bash 3.2's `builtin command` can mishandle errexit.
-if [[ -n ${ZSH_VERSION-} ]]; then
-    function command() {
-        local _shell_command_name="${1-}"
-        [[ $_shell_command_name != -- ]] || _shell_command_name="${2-}"
-        case $_shell_command_name in
-        node | npm | npx | corepack | yarn | yarnpkg | pnpm | pnpx)
-            if [[ ${_shell_nvm_lazy_enabled-0} == 1 &&
-                ${_shell_nvm_loaded-0} != 1 && ${_shell_nvm_loading-0} != 1 ]]; then
-                nvmsetup || return
-            fi
-            ;;
-        go | gofmt)
-            if [[ ${_shell_gvm_lazy_enabled-0} == 1 &&
-                ${_shell_gvm_loaded-0} != 1 && ${_shell_gvm_loading-0} != 1 ]]; then
-                gvmsetup || return
-            fi
-            ;;
-        esac
-        builtin command "$@"
-    }
-fi
 
 # Install one-shot wrappers. Only validated names enter eval; command arguments
 # are forwarded unchanged after the loader succeeds in the current shell.
@@ -138,58 +109,6 @@ function _shell_lazy_register() {
     for _shell_lazy_command in "$@"; do
         eval "function $_shell_lazy_command() { \"$_shell_lazy_loader\" && \"$_shell_lazy_command\" \"\$@\"; }"
     done
-}
-
-# These can also be called explicitly before launching external scripts, whose
-# node/go invocations cannot trigger functions in the parent shell.
-function nvmsetup() {
-    [[ ${_shell_nvm_loaded-0} == 1 ]] && return 0
-    local _shell_nvm_script="${NVM_DIR:-$HOME/.nvm}/nvm.sh" _shell_nvm_result=0
-    # Dynamic local scope lets command() recognize calls made during loading.
-    local _shell_nvm_loading=1
-    if [[ ! -s $_shell_nvm_script ]]; then
-        printf 'NVM initialization script not found: %s\n' "$_shell_nvm_script" >&2
-        return 1
-    fi
-
-    # Remove the whole group first: NVM itself may invoke node/npm while loading.
-    unset -f nvm node npm npx corepack yarn yarnpkg pnpm pnpx 2>/dev/null || :
-    set --
-    # shellcheck source=/dev/null
-    source "$_shell_nvm_script" || _shell_nvm_result=$?
-    if [[ $_shell_nvm_result != 0 ]]; then
-        _shell_lazy_register nvmsetup nvm node npm npx corepack yarn yarnpkg pnpm pnpx
-        return "$_shell_nvm_result"
-    fi
-    _shell_nvm_loaded=1
-}
-
-function gvmsetup() {
-    [[ ${_shell_gvm_loaded-0} == 1 ]] && return 0
-    local _shell_gvm_script="$HOME/.gvm/scripts/gvm" _shell_gvm_result=0
-    local _shell_gvm_cd _shell_gvm_loading=1
-    if [[ ! -s $_shell_gvm_script ]]; then
-        printf 'GVM initialization script not found: %s\n' "$_shell_gvm_script" >&2
-        return 1
-    fi
-
-    # GVM installs a cd wrapper during initialization. Keep the previous behavior
-    # of disabling it, but do not erase a cd function installed since startup.
-    _shell_gvm_cd=$(declare -f cd) || _shell_gvm_cd=''
-    unset -f gvm go gofmt 2>/dev/null || :
-    set --
-    # shellcheck source=/dev/null
-    source "$_shell_gvm_script" || _shell_gvm_result=$?
-    if [[ -n $_shell_gvm_cd ]]; then
-        eval "$_shell_gvm_cd"
-    else
-        unset -f cd 2>/dev/null || :
-    fi
-    if [[ $_shell_gvm_result != 0 ]]; then
-        _shell_lazy_register gvmsetup gvm go gofmt
-        return "$_shell_gvm_result"
-    fi
-    _shell_gvm_loaded=1
 }
 
 # Register completion callbacks without running the CLI generators at startup.

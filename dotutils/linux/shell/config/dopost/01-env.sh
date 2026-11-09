@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck shell=bash
 
-include -f "${HOME}/.venv/bin/activate"
 include -f "${HOME}/.inti_shrc"
 
 if [[ "${CURRSHELL}" == "zsh" ]]; then
