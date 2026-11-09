@@ -4,7 +4,9 @@
 #@/db_type	tabledb
 
 张昊	zh	1000
-张昊	ah	1000
+张昊	zhanghao	1000
+洪雅婷	hyt	1000
+洪雅婷	hongyating	1000
 
 有	u	3
 又	u	2

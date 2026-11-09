@@ -7,17 +7,20 @@ uv = "latest"
 "pipx:black" = "latest"
 
 lua = "latest"
-go = "latest"
+go = { version = "latest", postinstall = "go env -w $HOME/dev/proj/go" }
 "go:github.com/mikefarah/yq/v4" = { version = "latest", install_env = {} }
 
 rust = "stable"
 cargo-binstall = "latest"
 "cargo:ripgrep" = { version = "latest", os = ["linux", "macos"] }
 "cargo:bob-nvim" = { version = "v4.1.7", os = [
-  "linux",
-  "macos",
+    "linux",
+    "macos",
 ], postinstall = "bob use v0.12.6" }
 
 fzf = "latest"
 starship = "latest"
 tmux = "latest"
+
+[env]
+GOPATH = "$HOME/dev/go"
