@@ -7,7 +7,7 @@ uv = "latest"
 "pipx:black" = "latest"
 
 lua = "latest"
-go = { version = "latest", postinstall = "go env -w $HOME/dev/proj/go" }
+go = { version = "latest" }
 "go:github.com/mikefarah/yq/v4" = { version = "latest", install_env = {} }
 
 rust = "stable"
