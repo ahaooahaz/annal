@@ -62,6 +62,15 @@ are left untouched; backups created by older installers can still be pruned.
 Git's `.gitconfig.d/user.personal` and `user.work` are created only when
 missing and remain user-owned, outside uninstall/prune.
 
+### Rime / Fcitx5
+
+On Linux, the Rime module also installs `squirrel` / `squirrel-dark` Fcitx5
+Classic UI themes and links the configuration that selects them. They approximate
+the current macOS Squirrel appearance; the macOS installation is unchanged.
+Existing theme/configuration destinations are backed up before linking.
+See [Fcitx5 theme setup and limitations](dotutils/linux/rime/config/fcitx5/README.md).
+Run `make -C dotutils/linux/rime test` for offline installation tests.
+
 ### Adding a module
 
 Declare source/destination pairs and optional GitHub plugins, then include
