@@ -1,0 +1,8 @@
+# Rime / Fcitx5 custom settings
+# encoding: utf-8
+# Fcitx5-Rime uses this file for app_options, not candidate-window styling.
+# UI layout/font: fcitx5/conf/classicui.conf
+# Light/dark theme: fcitx5/themes/squirrel*/theme.conf
+# Border (1 px) and corner radius (4 px): each theme's background.svg
+# The Rime Makefile links these files to the appropriate Fcitx5 directories.
+patch: {}
