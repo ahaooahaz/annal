@@ -126,3 +126,9 @@ hl.window_rule({
 })
 hl.bind("F2", hl.dsp.exec_cmd("caelestia clipboard"), { description = "Clipboard History" })
 hl.bind(mainMod .. " + L", hl.dsp.global("caelestia:lock"))
+-- Super + . 将窗口移动到下一个工作区
+hl.bind("SUPER + period", hl.dsp.window.move({ workspace = "+1", follow = true }))
+-- Super + , 将窗口移动到上一个工作区
+hl.bind("SUPER + comma", hl.dsp.window.move({ workspace = "-1", follow = true }))
+hl.bind("SUPER + bracketright", hl.dsp.focus({ workspace = "+1" }), { repeating = true })
+hl.bind("SUPER + bracketleft", hl.dsp.focus({ workspace = "-1" }), { repeating = true })
