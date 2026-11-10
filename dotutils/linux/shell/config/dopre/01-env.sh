@@ -15,20 +15,12 @@ export EDITOR=nvim
 export VISUAL=nvim
 
 if [[ -n "$XDG_SESSION_TYPE" && "$XDG_SESSION_TYPE" != "tty" ]]; then
-    if [[ "$XDG_CURRENT_DESKTOP" == "KDE" ]]; then
-        export INPUT_METHOD=fcitx
-        export GTK_IM_MODULE=fcitx
-        export XMODIFIERS=@im=fcitx
-        export QT_IM_MODULE=fcitx
-        # ref: https://github.com/kovidgoyal/kitty/issues/469
-        export GLFW_IM_MODULE=ibus
-    else
-        export INPUT_METHOD=ibus
-        export GLFW_IM_MODULE=ibus
-        export GTK_IM_MODULE=ibus
-        export XMODIFIERS=@im=ibus
-        export QT_IM_MODULE=ibus
-    fi
+    export INPUT_METHOD=fcitx
+    export GTK_IM_MODULE=fcitx
+    export XMODIFIERS=@im=fcitx
+    export QT_IM_MODULE=fcitx
+    # ref: https://github.com/kovidgoyal/kitty/issues/469
+    export GLFW_IM_MODULE=ibus
 fi
 
 # private env.

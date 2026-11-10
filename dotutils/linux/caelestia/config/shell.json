@@ -32,7 +32,7 @@
                 "id": "microphone"
             },
             {
-                "enabled": false,
+                "enabled": true,
                 "id": "kbLayout"
             },
             {
@@ -92,10 +92,47 @@
                     "timeout": 14700
                 }
             ]
-        }
+        },
+        "language": ""
     },
     "services": {
         "defaultPlayer": "NetEase Cloud Music Gtk4",
         "weatherUnits": "Celsius"
+    },
+    "utilities": {
+        "quickToggles": [
+            {
+                "enabled": true,
+                "id": "wifi"
+            },
+            {
+                "enabled": true,
+                "id": "bluetooth"
+            },
+            {
+                "enabled": false,
+                "id": "mic"
+            },
+            {
+                "enabled": true,
+                "id": "settings"
+            },
+            {
+                "enabled": false,
+                "id": "gameMode"
+            },
+            {
+                "enabled": true,
+                "id": "wallpaperPlaying"
+            },
+            {
+                "enabled": true,
+                "id": "dnd"
+            },
+            {
+                "enabled": false,
+                "id": "vpn"
+            }
+        ]
     }
 }
