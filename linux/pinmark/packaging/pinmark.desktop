@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=Pinmark
+Name[zh_CN]=Pinmark 截图贴图
+Comment=Select, pin and annotate a screenshot
+Comment[zh_CN]=框选截图，原位贴图，矩形和箭头标注
+Exec=pinmark
+TryExec=pinmark
+Icon=pinmark
+Terminal=false
+StartupNotify=false
+Categories=Graphics;Utility;

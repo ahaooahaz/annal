@@ -21,6 +21,7 @@ cargo-binstall = "latest"
 fzf = "latest"
 starship = "latest"
 tmux = "latest"
+pi = "latest"
 
 [env]
 GOPATH = "$HOME/dev/go"

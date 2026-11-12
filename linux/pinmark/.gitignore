@@ -1,0 +1,10 @@
+/target/
+/dist/
+/.qa/
+/.backups/
+/packaging/src/
+/packaging/pkg/
+/packaging/target/
+/packaging/*.log
+*.pkg.tar.*
+/pinmark-*-linux-*.tar.gz
