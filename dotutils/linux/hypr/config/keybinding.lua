@@ -90,16 +90,8 @@ hl.bind(
     hl.dsp.exec_cmd("wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-"),
     { locked = true, repeating = true }
 )
-hl.bind(
-    "XF86AudioMute",
-    hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),
-    { locked = true }
-)
-hl.bind(
-    "XF86AudioMicMute",
-    hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),
-    { locked = true }
-)
+hl.bind("XF86AudioMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"), { locked = true })
+hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"), { locked = true })
 hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"), { locked = true, repeating = true })
 hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"), { locked = true, repeating = true })
 
@@ -133,23 +125,7 @@ hl.bind("SUPER + H", function()
 end)
 
 -- hl.bind("F1", hl.dsp.exec_cmd("omasnap --editor=overlay"), { description = "Screenshot" })
--- hl.bind("F1", hl.dsp.exec_cmd("caelestia screenshot --region --freeze"), { description = "Region Screenshot" })
-hl.bind("F1", function()
-    local mon = hl.get_active_monitor()
-    local n = mon and mon.id or 0
-    hl.exec_cmd("flameshot screen --number " .. n .. " --edit")
-end, {
-    description = "Flameshot Screenshot",
-})
-hl.window_rule({
-    match = { class = "flameshot" },
-    no_anim = true,
-    pin = true,
-    float = true,
-    decorate = false,
-    no_blur = true,
-    no_shadow = true,
-})
+hl.bind("F1", hl.dsp.exec_cmd("$HOME/.local/bin/pinmark"), { description = "Region Screenshot" })
 hl.bind("F2", hl.dsp.exec_cmd("caelestia clipboard"), { description = "Clipboard History" })
 hl.bind(mainMod .. " + L", hl.dsp.global("caelestia:lock"))
 -- Super + . 将窗口移动到下一个工作区
