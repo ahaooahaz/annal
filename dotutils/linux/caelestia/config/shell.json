@@ -6,14 +6,22 @@
     },
     "bar": {
         "activeWindow": {
+            "compact": true,
+            "inverted": true,
             "showOnHover": true
         },
         "clock": {
-            "background": true,
+            "background": false,
             "showDate": true,
+            "showIcon": false,
             "showSeconds": true
         },
         "dragThreshold": 20,
+        "persistent": true,
+        "popouts": {
+            "activeWindow": true,
+            "tray": true
+        },
         "scrollActions": {
             "workspaces": true
         },
@@ -48,6 +56,11 @@
                 "id": "battery"
             }
         ],
+        "tray": {
+            "background": false,
+            "compact": false,
+            "recolour": false
+        },
         "workspaces": {
             "activeIndicator": true,
             "activeTrail": true,
@@ -58,6 +71,7 @@
         }
     },
     "dashboard": {
+        "enabled": true,
         "showClockSeconds": true
     },
     "general": {
@@ -95,11 +109,29 @@
         },
         "language": ""
     },
+    "launcher": {
+        "actionPrefix": ">",
+        "dragThreshold": 50,
+        "showOnHover": true,
+        "useFuzzy": {
+            "actions": true,
+            "apps": true,
+            "wallpapers": true
+        },
+        "vimKeybinds": true
+    },
     "services": {
         "defaultPlayer": "NetEase Cloud Music Gtk4",
         "weatherUnits": "Celsius"
     },
+    "sidebar": {
+        "enabled": true,
+        "showOnHover": true
+    },
     "utilities": {
+        "cards": {
+            "recorder": false
+        },
         "quickToggles": [
             {
                 "enabled": true,

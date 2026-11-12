@@ -2,6 +2,9 @@
 ---- LOOK AND FEEL ----
 -----------------------
 
+-- Keep window borders in sync with the generated Caelestia colour scheme.
+local scheme = require("scheme.current")
+
 -- Refer to https://wiki.hypr.land/configuring/core/config-options/
 hl.config({
 	general = {
@@ -11,8 +14,8 @@ hl.config({
 		border_size = 2,
 
 		col = {
-			active_border = { colors = { "rgba(33ccffee)", "rgba(00ff99ee)" }, angle = 45 },
-			inactive_border = "rgba(595959aa)",
+			active_border = { colors = { "rgba(" .. scheme.primary .. "ee)", "rgba(" .. scheme.secondary .. "ee)" }, angle = 45 },
+			inactive_border = "rgba(" .. scheme.outline .. "aa)",
 		},
 
 		-- Set to true to enable resizing windows by clicking and dragging on borders and gaps

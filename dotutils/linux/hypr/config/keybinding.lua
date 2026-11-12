@@ -18,8 +18,34 @@ local closeWindowBind = hl.bind(mainMod .. " + Q", hl.dsp.window.close())
 hl.bind(mainMod .. " + E", hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + Shift + F", hl.dsp.window.fullscreen({ action = "toggle" }))
 
-hl.bind(mainMod .. " + C", hl.dsp.exec_cmd("~/.config/hypr/scripts/clipboard.sh c"))
-hl.bind(mainMod .. " + V", hl.dsp.exec_cmd("~/.config/hypr/scripts/clipboard.sh v"))
+-- macOS-style shortcuts: Super+C copies and Super+V pastes in every app.
+local terminalClasses = {
+    kitty = true,
+    alacritty = true,
+    foot = true,
+    footclient = true,
+    wezterm = true,
+    ["org.wezfurlong.wezterm"] = true,
+}
+
+local function clipboardShortcut(key)
+    return function()
+        local window = hl.get_active_window()
+        if not window then
+            return
+        end
+
+        local isTerminal = terminalClasses[(window.class or ""):lower()]
+        hl.dispatch(hl.dsp.send_shortcut({
+            mods = isTerminal and "CTRL SHIFT" or "CTRL",
+            key = key,
+            window = window,
+        }))
+    end
+end
+
+hl.bind(mainMod .. " + C", clipboardShortcut("C"))
+hl.bind(mainMod .. " + V", clipboardShortcut("V"))
 hl.bind(mainMod .. " + A", hl.dsp.send_shortcut({ mods = "CTRL", key = "A" }))
 
 hl.bind("ALT + Tab", hl.dsp.window.cycle_next())
@@ -67,12 +93,12 @@ hl.bind(
 hl.bind(
     "XF86AudioMute",
     hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle"),
-    { locked = true, repeating = true }
+    { locked = true }
 )
 hl.bind(
     "XF86AudioMicMute",
     hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"),
-    { locked = true, repeating = true }
+    { locked = true }
 )
 hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%+"), { locked = true, repeating = true })
 hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -e4 -n2 set 5%-"), { locked = true, repeating = true })
@@ -132,3 +158,4 @@ hl.bind("SUPER + period", hl.dsp.window.move({ workspace = "+1", follow = true }
 hl.bind("SUPER + comma", hl.dsp.window.move({ workspace = "-1", follow = true }))
 hl.bind("SUPER + bracketright", hl.dsp.focus({ workspace = "+1" }), { repeating = true })
 hl.bind("SUPER + bracketleft", hl.dsp.focus({ workspace = "-1" }), { repeating = true })
+hl.bind("SUPER + Tab", hl.dsp.window.cycle_next())
