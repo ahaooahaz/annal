@@ -35,7 +35,7 @@ $os\
 [](fg:color_aqua bg:color_blue)\
 [](fg:color_blue bg:color_bg3)\
 [](fg:color_bg3 bg:color_bg1)\
-[ ](fg:color_bg1)\
+[ ](fg:color_bg1)\
 $character"""
 
 [palettes.gruvbox_dark]
