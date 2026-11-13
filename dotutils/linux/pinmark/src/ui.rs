@@ -1,4 +1,6 @@
-use std::{io, os::unix::net::UnixListener, path::PathBuf, sync::Arc, thread};
+use std::{
+    collections::HashMap, io, os::unix::net::UnixListener, path::PathBuf, sync::Arc, thread,
+};
 
 use calloop::{channel, generic::Generic, EventLoop, Interest, Mode, PostAction};
 use calloop_wayland_source::WaylandSource;
@@ -37,11 +39,9 @@ use wayland_protocols::wp::{
 
 use crate::{
     backend::{self, Monitor, Runner, Screenshot, TaskError},
-    geometry::{
-        copy_should_close, toolbar_rect, Drag, Markings, Point, Rect, Tool, TOOLBAR_HEIGHT,
-        TOOLBAR_WIDTH,
-    },
+    geometry::{toolbar_rect, Drag, Markings, Point, Rect, Tool, TOOLBAR_HEIGHT, TOOLBAR_WIDTH},
     ipc::{self, Request},
+    pins::{PinId, PinStore},
     render::{self, Button, CopyState},
     save,
 };
@@ -49,8 +49,8 @@ use crate::{
 #[derive(Debug)]
 enum WorkerMessage {
     Captured(u64, Result<Screenshot, TaskError>),
-    Copied(u64, Result<(), TaskError>),
-    Saved(u64, Result<Option<PathBuf>, TaskError>),
+    Copied(PinId, Result<(), TaskError>),
+    Saved(PinId, Result<Option<PathBuf>, TaskError>),
     Quit,
 }
 
@@ -68,11 +68,9 @@ struct NativeLayer {
     waiting_frame: bool,
     dirty: bool,
 }
-
 impl Drop for NativeLayer {
     fn drop(&mut self) {
         self.viewport.destroy();
-        // LayerSurface then destroys its role before its wl_surface.
     }
 }
 
@@ -88,6 +86,36 @@ struct Document {
     screenshot: Screenshot,
     markings: Markings,
     offset: (i32, i32),
+}
+
+struct Card {
+    document: Document,
+    viewer: Option<Viewer>,
+    hover: Option<Button>,
+    pressed: Option<Button>,
+    copy_state: CopyState,
+    save_state: CopyState,
+}
+impl Card {
+    fn new(screenshot: Screenshot) -> Self {
+        let offset = (
+            screenshot.region.x - screenshot.output.rect.x,
+            screenshot.region.y - screenshot.output.rect.y,
+        );
+        let markings = Markings::new(screenshot.region.width, screenshot.region.height);
+        Self {
+            document: Document {
+                screenshot,
+                markings,
+                offset,
+            },
+            viewer: None,
+            hover: None,
+            pressed: None,
+            copy_state: CopyState::Idle,
+            save_state: CopyState::Idle,
+        }
+    }
 }
 
 struct State {
@@ -107,14 +135,10 @@ struct State {
     pointer: Option<ThemedPointer>,
     keyboard: Option<wl_keyboard::WlKeyboard>,
     keyboard_surface: Option<wl_surface::WlSurface>,
-    viewer: Option<Viewer>,
-    document: Option<Document>,
-    hover: Option<Button>,
-    pressed: Option<Button>,
-    copy_state: CopyState,
-    save_state: CopyState,
-    drag: Option<Drag>,
-    saving: bool,
+    pins: PinStore<Card>,
+    suspended: Vec<PinId>,
+    drag: Option<(PinId, Drag)>,
+    saving: Option<PinId>,
     save_cancel: Option<tokio::sync::oneshot::Sender<()>>,
     generation: u64,
     capturing: bool,
@@ -141,10 +165,10 @@ fn monitor_info(info: &OutputInfo) -> Option<Monitor> {
     } else {
         physical
     };
-    let integer_scale = info.scale_factor.max(1);
+    let scale = info.scale_factor.max(1);
     let logical = info
         .logical_size
-        .unwrap_or((physical.0 / integer_scale, physical.1 / integer_scale));
+        .unwrap_or((physical.0 / scale, physical.1 / scale));
     let rect = Rect::new(
         position.0,
         position.1,
@@ -159,6 +183,13 @@ fn monitor_info(info: &OutputInfo) -> Option<Monitor> {
 }
 
 impl State {
+    fn card(&self, id: PinId) -> Option<&Card> {
+        self.pins.get(id).map(|pin| &pin.value)
+    }
+    fn card_mut(&mut self, id: PinId) -> Option<&mut Card> {
+        self.pins.get_mut(id).map(|pin| &mut pin.value)
+    }
+
     fn monitors(&self) -> Vec<(wl_output::WlOutput, Monitor)> {
         self.outputs
             .outputs()
@@ -188,8 +219,7 @@ impl State {
         layer.set_anchor(Anchor::TOP | Anchor::LEFT);
         layer.set_size(rect.width, rect.height);
         layer.set_margin(rect.y - monitor.y, 0, 0, rect.x - monitor.x);
-        // Zero would let bars/panels shift the surface. -1 anchors to physical
-        // output edges and preserves the selected screenshot's exact position.
+        // Anchor against physical output edges, ignoring panel reservations.
         layer.set_exclusive_zone(-1);
         layer.set_keyboard_interactivity(KeyboardInteractivity::OnDemand);
         layer.commit();
@@ -203,16 +233,18 @@ impl State {
         }
     }
 
-    fn show_document(&mut self) -> Result<(), String> {
-        let document = self.document.as_ref().ok_or("没有截图")?;
+    fn show_card(&mut self, id: PinId) -> Result<(), String> {
+        let card = self.card(id).ok_or("截图已关闭")?;
+        if card.viewer.is_some() {
+            return Ok(());
+        }
+        let document = &card.document;
         let snapshot = &document.screenshot;
         let (output, monitor) = self
             .monitors()
             .into_iter()
-            .find(|(_, output)| output.name == snapshot.output.name)
+            .find(|(_, monitor)| monitor.name == snapshot.output.name)
             .ok_or("截图所在的显示器已移除")?;
-        // Store offsets relative to the output so a moved pin survives save
-        // dialogs, canceled captures, and changes to monitor layout.
         let region = Rect::new(
             monitor.rect.x + document.offset.0,
             monitor.rect.y + document.offset.1,
@@ -229,26 +261,33 @@ impl State {
             monitor.rect,
             "pinmark-controls",
         );
-        self.viewer = Some(Viewer {
+        let card = self.card_mut(id).ok_or("截图已关闭")?;
+        card.viewer = Some(Viewer {
             output,
             monitor: monitor.rect,
             region,
             image,
             toolbar,
         });
-        self.hover = None;
-        self.pressed = None;
-        self.drag = None;
-        self.copy_state = CopyState::Idle;
-        self.save_state = CopyState::Idle;
-        eprintln!(
-            "Pinmark：工具栏为矩形、箭头、复制、另存为、关闭。未选工具时左键拖动；再次点击工具取消选中。右键撤销，Esc 关闭。"
-        );
+        card.hover = None;
+        card.pressed = None;
         Ok(())
     }
 
+    fn display_new(&mut self, screenshot: Screenshot) {
+        self.exit = false;
+        let id = self.pins.replace_unpinned(Card::new(screenshot));
+        if let Err(error) = self.show_card(id) {
+            self.report_error(&error);
+            self.close_card(id);
+        }
+        eprintln!("Pinmark：矩形、箭头、复制、另存为、图钉、关闭。图钉亮起时保留此图；未选工具时左键拖动，右键撤销。");
+    }
+
     fn handle_request(&mut self, request: Request) {
-        if self.quitting || ((self.saving || self.pending_copies > 0) && request != Request::Quit) {
+        if self.quitting
+            || ((self.saving.is_some() || self.pending_copies > 0) && request != Request::Quit)
+        {
             return;
         }
         match request {
@@ -273,20 +312,28 @@ impl State {
             self.exit_if_idle();
             return;
         }
-        let replacing_pin = self.viewer.take().is_some();
-        if let Some(document) = &mut self.document {
-            document.markings.draft = None;
+        self.suspended.clear();
+        let mut removed_viewer = false;
+        // Pinned layers stay visible. Only temporary images follow the original
+        // hide/replace behavior, and their documents survive canceled capture.
+        for pin in self.pins.iter_mut().filter(|pin| !pin.pinned) {
+            removed_viewer |= pin.value.viewer.take().is_some();
+            pin.value.document.markings.draft = None;
+            self.suspended.push(pin.id);
         }
+        self.drag = None;
+        self.drag_pointer = None;
         self.keyboard_surface = None;
         let _ = self.connection.flush();
         self.generation += 1;
         let generation = self.generation;
         self.capturing = true;
+        self.exit = false;
         let runner = Runner::default();
         self.capture_runner = Some(runner.clone());
         let sender = self.sender.clone();
         thread::spawn(move || {
-            let result = backend::capture(monitors, runner, replacing_pin);
+            let result = backend::capture(monitors, runner, removed_viewer);
             let _ = sender.send(WorkerMessage::Captured(generation, result));
         });
     }
@@ -297,13 +344,17 @@ impl State {
             self.exit_if_idle();
             return;
         };
-        self.viewer.take();
-        self.generation += 1;
+        self.drag = None;
+        self.drag_pointer = None;
         let width = 360.min(monitor.rect.width);
         let height = 220.min(monitor.rect.height);
-        let x = monitor.rect.x + ((monitor.rect.width - width) / 2) as i32;
-        let y = monitor.rect.y + ((monitor.rect.height - height) / 2) as i32;
-        let region = Rect::new(x, y, width, height).unwrap();
+        let region = Rect::new(
+            monitor.rect.x + ((monitor.rect.width - width) / 2) as i32,
+            monitor.rect.y + ((monitor.rect.height - height) / 2) as i32,
+            width,
+            height,
+        )
+        .unwrap();
         let mut image = Pixmap::new(width, height).unwrap();
         for (index, pixel) in image.pixels_mut().iter_mut().enumerate() {
             let x = index % width as usize;
@@ -315,19 +366,23 @@ impl State {
             };
             *pixel = tiny_skia::PremultipliedColorU8::from_rgba(c, c, c, 255).unwrap();
         }
-        self.document = Some(Document {
-            offset: (region.x - monitor.rect.x, region.y - monitor.rect.y),
-            screenshot: Screenshot {
-                region,
-                output: monitor,
-                image: Arc::new(image),
-            },
-            markings: Markings::new(width, height),
+        self.display_new(Screenshot {
+            region,
+            output: monitor,
+            image: Arc::new(image),
         });
-        if let Err(error) = self.show_document() {
-            self.report_error(&error);
-            self.document.take();
-            self.exit_if_idle();
+        self.exit_if_idle();
+    }
+
+    fn restore_suspended(&mut self) {
+        for id in std::mem::take(&mut self.suspended) {
+            if self.card(id).is_none() {
+                continue;
+            }
+            if let Err(error) = self.show_card(id) {
+                self.report_error(&error);
+                self.close_card(id);
+            }
         }
     }
 
@@ -342,52 +397,37 @@ impl State {
                 }
                 match result {
                     Ok(screenshot) => {
-                        self.document = Some(Document {
-                            offset: (
-                                screenshot.region.x - screenshot.output.rect.x,
-                                screenshot.region.y - screenshot.output.rect.y,
-                            ),
-                            markings: Markings::new(
-                                screenshot.region.width,
-                                screenshot.region.height,
-                            ),
-                            screenshot,
-                        });
+                        self.suspended.clear();
+                        self.display_new(screenshot);
                     }
-                    Err(TaskError::Cancelled) => (),
-                    Err(error) => self.report_error(&error.to_string()),
-                }
-                if self.document.is_some() {
-                    if let Err(error) = self.show_document() {
-                        self.report_error(&error);
-                        self.document.take();
-                    }
-                }
-                self.exit_if_idle();
-            }
-            WorkerMessage::Copied(generation, result) => {
-                self.pending_copies = self.pending_copies.saturating_sub(1);
-                if self.viewer.is_some()
-                    && copy_should_close(generation, self.generation, result.is_ok())
-                {
-                    // wl-copy has already become the background clipboard owner.
-                    // Closing these surfaces cannot erase the copied PNG.
-                    self.quit();
-                    return;
-                }
-                if generation == self.generation && self.viewer.is_some() {
-                    if let Err(error) = result {
+                    Err(TaskError::Cancelled) => self.restore_suspended(),
+                    Err(error) => {
                         self.report_error(&error.to_string());
-                        self.copy_state = CopyState::Error;
-                        self.request_draw(SurfaceKind::Toolbar);
+                        self.restore_suspended();
                     }
                 }
                 self.exit_if_idle();
             }
-            WorkerMessage::Saved(generation, result) => {
-                self.saving = false;
+            WorkerMessage::Copied(id, result) => {
+                self.pending_copies = self.pending_copies.saturating_sub(1);
+                match result {
+                    // Closing one card never erases other pinned images. The
+                    // process exits naturally only after the final card closes.
+                    Ok(()) => self.close_card(id),
+                    Err(error) => {
+                        if let Some(card) = self.card_mut(id) {
+                            card.copy_state = CopyState::Error;
+                            self.report_error(&error.to_string());
+                            self.request_draw(id, SurfaceKind::Toolbar);
+                        }
+                    }
+                }
+                self.exit_if_idle();
+            }
+            WorkerMessage::Saved(id, result) => {
+                self.saving = None;
                 self.save_cancel.take();
-                if self.quitting || generation != self.generation {
+                if self.quitting || self.card(id).is_none() {
                     self.exit_if_idle();
                     return;
                 }
@@ -402,78 +442,98 @@ impl State {
                         CopyState::Error
                     }
                 };
-                if let Err(error) = self.show_document() {
+                if let Err(error) = self.show_card(id) {
                     self.report_error(&error);
-                    self.document.take();
+                    self.close_card(id);
                 }
-                self.save_state = status;
-                self.request_draw(SurfaceKind::Toolbar);
+                if let Some(card) = self.card_mut(id) {
+                    card.save_state = status;
+                }
+                self.request_draw(id, SurfaceKind::Toolbar);
                 self.exit_if_idle();
             }
             WorkerMessage::Quit => self.quit(),
         }
     }
 
-    fn copy(&mut self) {
-        if self.copy_state == CopyState::Working || self.saving {
+    fn copy(&mut self, id: PinId) {
+        if self.saving.is_some() || self.capturing {
             return;
         }
-        let Some(document) = self.document.as_ref() else {
+        let Some(card) = self.card(id) else {
             return;
         };
-        let image = document.screenshot.image.clone();
-        let mut markings = document.markings.clone();
+        if card.copy_state == CopyState::Working {
+            return;
+        }
+        let image = card.document.screenshot.image.clone();
+        let mut markings = card.document.markings.clone();
         markings.draft = None;
-        let generation = self.generation;
         let sender = self.sender.clone();
         self.pending_copies += 1;
-        self.copy_state = CopyState::Working;
-        self.request_draw(SurfaceKind::Toolbar);
+        self.card_mut(id).unwrap().copy_state = CopyState::Working;
+        self.request_draw(id, SurfaceKind::Toolbar);
         thread::spawn(move || {
             let result = render::export_png(&image, &markings)
                 .map_err(TaskError::Failed)
                 .and_then(backend::copy_png);
-            let _ = sender.send(WorkerMessage::Copied(generation, result));
+            let _ = sender.send(WorkerMessage::Copied(id, result));
         });
     }
 
-    fn save_as(&mut self) {
-        if self.saving || self.pending_copies > 0 || self.quitting {
+    fn save_as(&mut self, id: PinId) {
+        if self.saving.is_some() || self.pending_copies > 0 || self.capturing || self.quitting {
             return;
         }
-        let Some(document) = &self.document else {
+        let Some(card) = self.card(id) else {
             return;
         };
-        let image = document.screenshot.image.clone();
-        let mut markings = document.markings.clone();
+        let image = card.document.screenshot.image.clone();
+        let mut markings = card.document.markings.clone();
         markings.draft = None;
-        let generation = self.generation;
         let sender = self.sender.clone();
         let (cancel, receiver) = tokio::sync::oneshot::channel();
         self.save_cancel = Some(cancel);
-        self.saving = true;
-        self.save_state = CopyState::Working;
+        self.saving = Some(id);
+        let card = self.card_mut(id).unwrap();
+        card.save_state = CopyState::Working;
+        card.viewer.take();
         self.drag = None;
-        self.viewer.take();
+        self.drag_pointer = None;
         self.keyboard_surface = None;
         let _ = self.connection.flush();
         thread::spawn(move || {
             let result = save::save_as(&image, &markings, receiver);
-            let _ = sender.send(WorkerMessage::Saved(generation, result));
+            let _ = sender.send(WorkerMessage::Saved(id, result));
         });
     }
 
-    fn move_pin(&mut self, region: Rect) {
-        let Some(viewer) = &mut self.viewer else {
+    fn toggle_pin(&mut self, id: PinId) {
+        if let Some(pinned) = self.pins.toggle_pin(id) {
+            eprintln!(
+                "Pinmark：{}",
+                if pinned {
+                    "已固定，后续截图不会替换此图"
+                } else {
+                    "已取消固定，下次截图会替换此图"
+                }
+            );
+            self.request_draw(id, SurfaceKind::Toolbar);
+        }
+    }
+
+    fn move_pin(&mut self, id: PinId, region: Rect) {
+        let Some(card) = self.card_mut(id) else {
+            return;
+        };
+        let Some(viewer) = &mut card.viewer else {
             return;
         };
         if viewer.region == region {
             return;
         }
         viewer.region = region;
-        if let Some(document) = &mut self.document {
-            document.offset = (region.x - viewer.monitor.x, region.y - viewer.monitor.y);
-        }
+        card.document.offset = (region.x - viewer.monitor.x, region.y - viewer.monitor.y);
         viewer.image.layer.set_margin(
             region.y - viewer.monitor.y,
             0,
@@ -491,14 +551,32 @@ impl State {
         viewer.toolbar.layer.commit();
     }
 
+    fn close_card(&mut self, id: PinId) {
+        if self.drag.is_some_and(|(drag_id, _)| drag_id == id) {
+            self.drag = None;
+            self.drag_pointer = None;
+        }
+        if self
+            .keyboard_surface
+            .as_ref()
+            .and_then(|surface| self.surface_key(surface))
+            .is_some_and(|(key, _)| key == id)
+        {
+            self.keyboard_surface = None;
+        }
+        self.pins.remove(id);
+        self.exit_if_idle();
+    }
+
     fn quit(&mut self) {
         self.quitting = true;
         self.drag = None;
+        self.drag_pointer = None;
+        self.suspended.clear();
         if let Some(cancel) = self.save_cancel.take() {
             let _ = cancel.send(());
         }
-        self.viewer.take();
-        self.document.take();
+        self.pins.clear();
         self.keyboard_surface = None;
         if let Some(runner) = &self.capture_runner {
             runner.cancel();
@@ -507,14 +585,17 @@ impl State {
     }
 
     fn exit_if_idle(&mut self) {
-        if self.viewer.is_none() && !self.capturing && !self.saving && self.pending_copies == 0 {
+        if self.pins.is_empty()
+            && !self.capturing
+            && self.saving.is_none()
+            && self.pending_copies == 0
+        {
             self.exit = true;
         }
     }
 
     fn report_error(&self, message: &str) {
         eprintln!("Pinmark：{message}");
-        // Optional notification helper. The program does not depend on it.
         let message = message.to_owned();
         thread::spawn(move || {
             let _ = std::process::Command::new("notify-send")
@@ -523,64 +604,74 @@ impl State {
         });
     }
 
-    fn surface_kind(&self, surface: &wl_surface::WlSurface) -> Option<SurfaceKind> {
-        let viewer = self.viewer.as_ref()?;
-        if viewer.image.layer.wl_surface() == surface {
-            Some(SurfaceKind::Image)
-        } else if viewer.toolbar.layer.wl_surface() == surface {
-            Some(SurfaceKind::Toolbar)
-        } else {
-            None
-        }
-    }
-
-    fn request_draw(&mut self, kind: SurfaceKind) {
-        if let Some(viewer) = &mut self.viewer {
-            let layer = match kind {
-                SurfaceKind::Image => &mut viewer.image,
-                SurfaceKind::Toolbar => &mut viewer.toolbar,
-            };
-            layer.dirty = true;
-            if !layer.ready || layer.waiting_frame {
-                return;
+    fn surface_key(&self, surface: &wl_surface::WlSurface) -> Option<(PinId, SurfaceKind)> {
+        self.pins.iter().find_map(|pin| {
+            let viewer = pin.value.viewer.as_ref()?;
+            if viewer.image.layer.wl_surface() == surface {
+                Some((pin.id, SurfaceKind::Image))
+            } else if viewer.toolbar.layer.wl_surface() == surface {
+                Some((pin.id, SurfaceKind::Toolbar))
+            } else {
+                None
             }
-        } else {
-            return;
-        }
-        self.draw(kind);
+        })
     }
 
-    fn draw(&mut self, kind: SurfaceKind) {
-        let Some(document) = &self.document else {
+    fn layer_mut(&mut self, id: PinId, kind: SurfaceKind) -> Option<&mut NativeLayer> {
+        let viewer = self.card_mut(id)?.viewer.as_mut()?;
+        Some(match kind {
+            SurfaceKind::Image => &mut viewer.image,
+            SurfaceKind::Toolbar => &mut viewer.toolbar,
+        })
+    }
+
+    fn request_draw(&mut self, id: PinId, kind: SurfaceKind) {
+        let Some(layer) = self.layer_mut(id, kind) else {
             return;
         };
+        layer.dirty = true;
+        if layer.ready && !layer.waiting_frame {
+            self.draw(id, kind);
+        }
+    }
+
+    fn draw(&mut self, id: PinId, kind: SurfaceKind) {
+        let Some(pin) = self.pins.get(id) else {
+            return;
+        };
+        let card = &pin.value;
+        let document = &card.document;
         let pixels = match kind {
             SurfaceKind::Image => {
                 render::render_preview(&document.screenshot.image, &document.markings)
             }
             SurfaceKind::Toolbar => render::render_toolbar(
                 document.markings.tool,
-                self.hover,
-                self.pressed,
-                self.copy_state,
-                self.save_state,
+                card.hover,
+                card.pressed,
+                card.copy_state,
+                card.save_state,
+                pin.pinned,
                 document.screenshot.image.width() as f32 / document.markings.width as f32,
             ),
         };
-        let Some(viewer) = &mut self.viewer else {
+        let Some(viewer) = self
+            .pins
+            .get_mut(id)
+            .and_then(|pin| pin.value.viewer.as_mut())
+        else {
             return;
         };
         let layer = match kind {
             SurfaceKind::Image => &mut viewer.image,
             SurfaceKind::Toolbar => &mut viewer.toolbar,
         };
-        let result = self.pool.create_buffer(
+        let (buffer, bytes) = match self.pool.create_buffer(
             pixels.width() as i32,
             pixels.height() as i32,
             pixels.width() as i32 * 4,
             wl_shm::Format::Argb8888,
-        );
-        let (buffer, bytes) = match result {
+        ) {
             Ok(result) => result,
             Err(error) => {
                 self.report_error(&error.to_string());
@@ -647,14 +738,10 @@ pub fn run(instance: &ipc::Instance, initial: Request) -> Result<(), Box<dyn std
         pointer: None,
         keyboard: None,
         keyboard_surface: None,
-        viewer: None,
-        document: None,
-        hover: None,
-        pressed: None,
-        copy_state: CopyState::Idle,
-        save_state: CopyState::Idle,
+        pins: PinStore::default(),
+        suspended: Vec::new(),
         drag: None,
-        saving: false,
+        saving: None,
         save_cancel: None,
         generation: 0,
         capturing: false,
@@ -664,7 +751,6 @@ pub fn run(instance: &ipc::Instance, initial: Request) -> Result<(), Box<dyn std
         exit: false,
         sender: sender.clone(),
     };
-    // Receive output logical positions/sizes before asking slurp for a region.
     queue.roundtrip(&mut state)?;
     queue.roundtrip(&mut state)?;
     let mut event_loop = EventLoop::<State>::try_new()?;
@@ -764,24 +850,20 @@ impl CompositorHandler for State {
         surface: &wl_surface::WlSurface,
         _: u32,
     ) {
-        if let Some(kind) = self.surface_kind(surface) {
-            let viewer = self.viewer.as_mut().unwrap();
-            let layer = match kind {
-                SurfaceKind::Image => &mut viewer.image,
-                SurfaceKind::Toolbar => &mut viewer.toolbar,
-            };
-            layer.waiting_frame = false;
-            if layer.dirty {
-                self.draw(kind);
+        if let Some((id, kind)) = self.surface_key(surface) {
+            if let Some(layer) = self.layer_mut(id, kind) {
+                layer.waiting_frame = false;
+                if layer.dirty {
+                    self.draw(id, kind);
+                }
             }
         }
     }
 }
-
 impl LayerShellHandler for State {
     fn closed(&mut self, _: &Connection, _: &QueueHandle<Self>, layer: &LayerSurface) {
-        if self.surface_kind(layer.wl_surface()).is_some() {
-            self.quit();
+        if let Some((id, _)) = self.surface_key(layer.wl_surface()) {
+            self.close_card(id);
         }
     }
     fn configure(
@@ -792,18 +874,14 @@ impl LayerShellHandler for State {
         _: LayerSurfaceConfigure,
         _: u32,
     ) {
-        if let Some(kind) = self.surface_kind(layer.wl_surface()) {
-            let viewer = self.viewer.as_mut().unwrap();
-            let slot = match kind {
-                SurfaceKind::Image => &mut viewer.image,
-                SurfaceKind::Toolbar => &mut viewer.toolbar,
-            };
-            slot.ready = true;
-            self.request_draw(kind);
+        if let Some((id, kind)) = self.surface_key(layer.wl_surface()) {
+            if let Some(layer) = self.layer_mut(id, kind) {
+                layer.ready = true;
+            }
+            self.request_draw(id, kind);
         }
     }
 }
-
 impl OutputHandler for State {
     fn output_state(&mut self) -> &mut OutputState {
         &mut self.outputs
@@ -816,22 +894,27 @@ impl OutputHandler for State {
         _: &QueueHandle<Self>,
         output: wl_output::WlOutput,
     ) {
-        if self
-            .viewer
-            .as_ref()
-            .is_some_and(|viewer| viewer.output == output)
-        {
-            self.quit();
+        let ids: Vec<_> = self
+            .pins
+            .iter()
+            .filter(|pin| {
+                pin.value
+                    .viewer
+                    .as_ref()
+                    .is_some_and(|viewer| viewer.output == output)
+            })
+            .map(|pin| pin.id)
+            .collect();
+        for id in ids {
+            self.close_card(id);
         }
     }
 }
-
 impl ShmHandler for State {
     fn shm_state(&mut self) -> &mut Shm {
         &mut self.shm
     }
 }
-
 impl SeatHandler for State {
     fn seat_state(&mut self) -> &mut SeatState {
         &mut self.seats
@@ -879,6 +962,8 @@ impl SeatHandler for State {
                 relative.destroy();
             }
             self.pointer.take();
+            self.drag = None;
+            self.drag_pointer = None;
         }
         if capability == Capability::Keyboard {
             if let Some(keyboard) = self.keyboard.take() {
@@ -899,22 +984,23 @@ impl PointerHandler for State {
         events: &[PointerEvent],
     ) {
         use PointerEventKind::*;
-        // All motion events in one input frame refer to the surface position at
-        // the start of that frame. Coalesce a drag before committing its move.
-        let frame_origin = self.viewer.as_ref().map(|viewer| viewer.region);
-        let mut drag_pointer = None;
+        let origins: HashMap<_, _> = self
+            .pins
+            .iter()
+            .filter_map(|pin| Some((pin.id, pin.value.viewer.as_ref()?.region)))
+            .collect();
+        let mut drag_motion = None;
         let mut drag_release = false;
         for event in events {
-            let Some(kind) = self.surface_kind(&event.surface) else {
+            let Some((id, kind)) = self.surface_key(&event.surface) else {
                 continue;
             };
             let point = Point::new(event.position.0 as f32, event.position.1 as f32);
             match kind {
                 SurfaceKind::Image => {
                     let tool = self
-                        .document
-                        .as_ref()
-                        .map(|doc| doc.markings.tool)
+                        .card(id)
+                        .map(|card| card.document.markings.tool)
                         .unwrap_or(Tool::Move);
                     if let Enter { .. } = event.kind {
                         if let Some(pointer) = &self.pointer {
@@ -928,13 +1014,14 @@ impl PointerHandler for State {
                             );
                         }
                     }
-                    let global = frame_origin.map(|region| {
+                    let origin = origins.get(&id).copied();
+                    let global = origin.map(|region| {
                         Point::new(region.x as f32 + point.x, region.y as f32 + point.y)
                     });
                     match event.kind {
                         Press { button: 272, .. } if tool == Tool::Move => {
-                            if let (Some(origin), Some(pointer)) = (frame_origin, global) {
-                                self.drag = Some(Drag { origin, pointer });
+                            if let (Some(origin), Some(pointer)) = (origin, global) {
+                                self.drag = Some((id, Drag { origin, pointer }));
                                 self.drag_pointer = Some(pointer);
                                 if let Some(pointer) = &self.pointer {
                                     let _ = pointer.set_cursor(conn, CursorIcon::Grabbing);
@@ -942,44 +1029,46 @@ impl PointerHandler for State {
                             }
                         }
                         Motion { .. } if tool == Tool::Move => {
-                            if self.drag.is_some() && self.relative_pointer.is_none() {
-                                drag_pointer = global;
+                            if self.drag.is_some_and(|(key, _)| key == id)
+                                && self.relative_pointer.is_none()
+                            {
+                                drag_motion = global;
                             }
                         }
                         Release { button: 272, .. } if tool == Tool::Move => {
-                            if self.drag.is_some() {
+                            if self.drag.is_some_and(|(key, _)| key == id) {
                                 if self.relative_pointer.is_none() {
-                                    drag_pointer = global;
+                                    drag_motion = global;
                                 }
                                 drag_release = true;
                             }
                         }
                         Press { button: 272, .. } => {
-                            if let Some(doc) = &mut self.document {
-                                doc.markings.begin(point);
+                            if let Some(card) = self.card_mut(id) {
+                                card.document.markings.begin(point);
                             }
-                            self.request_draw(SurfaceKind::Image);
+                            self.request_draw(id, SurfaceKind::Image);
                         }
                         Motion { .. } => {
-                            if let Some(doc) = &mut self.document {
-                                if doc.markings.draft.is_none() {
+                            if let Some(card) = self.card_mut(id) {
+                                if card.document.markings.draft.is_none() {
                                     continue;
                                 }
-                                doc.markings.update(point);
+                                card.document.markings.update(point);
                             }
-                            self.request_draw(SurfaceKind::Image);
+                            self.request_draw(id, SurfaceKind::Image);
                         }
                         Release { button: 272, .. } => {
-                            if let Some(doc) = &mut self.document {
-                                doc.markings.finish(point);
+                            if let Some(card) = self.card_mut(id) {
+                                card.document.markings.finish(point);
                             }
-                            self.request_draw(SurfaceKind::Image);
+                            self.request_draw(id, SurfaceKind::Image);
                         }
                         Press { button: 273, .. } => {
-                            if let Some(doc) = &mut self.document {
-                                doc.markings.undo();
+                            if let Some(card) = self.card_mut(id) {
+                                card.document.markings.undo();
                             }
-                            self.request_draw(SurfaceKind::Image);
+                            self.request_draw(id, SurfaceKind::Image);
                         }
                         _ => (),
                     }
@@ -990,56 +1079,62 @@ impl PointerHandler for State {
                             let _ = pointer.set_cursor(conn, CursorIcon::Default);
                         }
                     }
-                    let size = self.viewer.as_ref().unwrap().toolbar.logical_size;
+                    let Some(card) = self.card_mut(id) else {
+                        continue;
+                    };
+                    let size = card.viewer.as_ref().unwrap().toolbar.logical_size;
                     let point = Point::new(
                         point.x * TOOLBAR_WIDTH as f32 / size.0 as f32,
                         point.y * TOOLBAR_HEIGHT as f32 / size.1 as f32,
                     );
-                    self.hover = if matches!(event.kind, Leave { .. }) {
+                    card.hover = if matches!(event.kind, Leave { .. }) {
                         None
                     } else {
                         render::button_at(point)
                     };
-                    match event.kind {
-                        Press { button: 272, .. } => self.pressed = self.hover,
-                        Release { button: 272, .. } => {
-                            let action = self
-                                .pressed
-                                .take()
-                                .filter(|button| Some(*button) == self.hover);
-                            match action {
-                                Some(Button::Rectangle) => {
-                                    self.drag = None;
-                                    if let Some(doc) = &mut self.document {
-                                        doc.markings.select_tool(Tool::Rectangle);
-                                    }
-                                }
-                                Some(Button::Arrow) => {
-                                    self.drag = None;
-                                    if let Some(doc) = &mut self.document {
-                                        doc.markings.select_tool(Tool::Arrow);
-                                    }
-                                }
-                                Some(Button::Copy) => self.copy(),
-                                Some(Button::Save) => self.save_as(),
-                                Some(Button::Close) => self.quit(),
-                                _ => (),
+                    let action = match event.kind {
+                        Press { button: 272, .. } => {
+                            card.pressed = card.hover;
+                            None
+                        }
+                        Release { button: 272, .. } => card
+                            .pressed
+                            .take()
+                            .filter(|button| Some(*button) == card.hover),
+                        _ => None,
+                    };
+                    match action {
+                        Some(Button::Rectangle) => {
+                            self.drag = None;
+                            if let Some(card) = self.card_mut(id) {
+                                card.document.markings.select_tool(Tool::Rectangle);
                             }
                         }
+                        Some(Button::Arrow) => {
+                            self.drag = None;
+                            if let Some(card) = self.card_mut(id) {
+                                card.document.markings.select_tool(Tool::Arrow);
+                            }
+                        }
+                        Some(Button::Copy) => self.copy(id),
+                        Some(Button::Save) => self.save_as(id),
+                        Some(Button::Pin) => self.toggle_pin(id),
+                        Some(Button::Close) => self.close_card(id),
                         _ => (),
                     }
-                    self.request_draw(SurfaceKind::Toolbar);
+                    self.request_draw(id, SurfaceKind::Toolbar);
                 }
             }
         }
-        if let (Some(drag), Some(pointer), Some(viewer)) =
-            (self.drag, drag_pointer, self.viewer.as_ref())
-        {
-            let region = drag.position(pointer, viewer.monitor);
-            self.move_pin(region);
+        if let (Some((id, drag)), Some(pointer)) = (self.drag, drag_motion) {
+            if let Some(viewer) = self.card(id).and_then(|card| card.viewer.as_ref()) {
+                let region = drag.position(pointer, viewer.monitor);
+                self.move_pin(id, region);
+            }
         }
         if drag_release {
             self.drag = None;
+            self.drag_pointer = None;
             if let Some(pointer) = &self.pointer {
                 let _ = pointer.set_cursor(conn, CursorIcon::Grab);
             }
@@ -1071,24 +1166,21 @@ impl Dispatch<zwp_relative_pointer_v1::ZwpRelativePointerV1, ()> for State {
             zwp_relative_pointer_v1::Event::RelativeMotion { dx, dy, .. } => (dx, dy),
             _ => return,
         };
-        if let (Some(drag), Some(pointer), Some(viewer)) =
-            (state.drag, state.drag_pointer, state.viewer.as_ref())
-        {
-            // Relative deltas do not change when the layer moves underneath the
-            // cursor. This avoids feedback/jitter from surface-local positions.
-            let pointer = Point::new(
-                (pointer.x + dx as f32)
-                    .clamp(viewer.monitor.x as f32, viewer.monitor.right() as f32),
-                (pointer.y + dy as f32)
-                    .clamp(viewer.monitor.y as f32, viewer.monitor.bottom() as f32),
-            );
-            state.drag_pointer = Some(pointer);
-            let region = drag.position(pointer, viewer.monitor);
-            state.move_pin(region);
+        if let (Some((id, drag)), Some(pointer)) = (state.drag, state.drag_pointer) {
+            if let Some(viewer) = state.card(id).and_then(|card| card.viewer.as_ref()) {
+                let pointer = Point::new(
+                    (pointer.x + dx as f32)
+                        .clamp(viewer.monitor.x as f32, viewer.monitor.right() as f32),
+                    (pointer.y + dy as f32)
+                        .clamp(viewer.monitor.y as f32, viewer.monitor.bottom() as f32),
+                );
+                let region = drag.position(pointer, viewer.monitor);
+                state.drag_pointer = Some(pointer);
+                state.move_pin(id, region);
+            }
         }
     }
 }
-
 impl Dispatch<wl_keyboard::WlKeyboard, ()> for State {
     fn event(
         state: &mut Self,
@@ -1101,23 +1193,23 @@ impl Dispatch<wl_keyboard::WlKeyboard, ()> for State {
         match event {
             wl_keyboard::Event::Enter { surface, .. } => state.keyboard_surface = Some(surface),
             wl_keyboard::Event::Leave { .. } => state.keyboard_surface = None,
-            // Only physical Escape is needed. No xkbcommon dependency or global key grab.
             wl_keyboard::Event::Key {
                 key: 1,
                 state: WEnum::Value(wl_keyboard::KeyState::Pressed),
                 ..
-            } if state
-                .keyboard_surface
-                .as_ref()
-                .is_some_and(|surface| state.surface_kind(surface).is_some()) =>
-            {
-                state.quit()
+            } => {
+                if let Some((id, _)) = state
+                    .keyboard_surface
+                    .as_ref()
+                    .and_then(|surface| state.surface_key(surface))
+                {
+                    state.close_card(id);
+                }
             }
             _ => (),
         }
     }
 }
-
 impl Dispatch<wp_viewporter::WpViewporter, ()> for State {
     fn event(
         _: &mut Self,
@@ -1176,7 +1268,6 @@ impl Dispatch<wl_registry::WlRegistry, ()> for CheckState {
         }
     }
 }
-
 pub fn check_protocols() -> Result<Vec<(String, u32)>, Box<dyn std::error::Error>> {
     let connection = Connection::connect_to_env()?;
     let mut queue = connection.new_event_queue::<CheckState>();

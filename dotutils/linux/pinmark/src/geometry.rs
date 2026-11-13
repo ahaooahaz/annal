@@ -230,7 +230,7 @@ impl Markings {
     }
 }
 
-pub const TOOLBAR_WIDTH: u32 = 266;
+pub const TOOLBAR_WIDTH: u32 = 316;
 pub const TOOLBAR_HEIGHT: u32 = 40;
 
 #[derive(Debug, Clone, Copy)]
@@ -266,14 +266,6 @@ impl Drag {
             ..self.origin
         }
     }
-}
-
-pub fn copy_should_close(
-    completed_generation: u64,
-    current_generation: u64,
-    succeeded: bool,
-) -> bool {
-    succeeded && completed_generation == current_generation
 }
 
 pub fn toolbar_rect(region: Rect, monitor: Rect) -> Rect {
@@ -396,13 +388,6 @@ mod tests {
             Rect::new(-400, 680, 400, 300).unwrap()
         );
         assert_eq!(drag.position(Point::new(f32::NAN, 0.0), monitor), origin);
-    }
-
-    #[test]
-    fn copy_closes_only_the_current_document_after_success() {
-        assert!(copy_should_close(7, 7, true));
-        assert!(!copy_should_close(7, 7, false));
-        assert!(!copy_should_close(7, 8, true));
     }
 
     #[test]

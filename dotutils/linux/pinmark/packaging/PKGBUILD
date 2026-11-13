@@ -1,6 +1,6 @@
 # Local package build: run makepkg -si from the packaging directory.
 pkgname=pinmark
-pkgver=0.2.0
+pkgver=0.3.0
 pkgrel=1
 pkgdesc='Native Wayland screenshot pinning with rectangle and arrow annotations'
 arch=('x86_64' 'aarch64')

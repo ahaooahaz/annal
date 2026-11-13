@@ -15,7 +15,7 @@ fn command_exists(name: &str) -> bool {
 }
 
 fn help() {
-    println!("Pinmark {} — 原生 Wayland 截图贴图与标注\n\n用法：\n  pinmark           框选截图，原位贴图；再次运行重新框选\n  pinmark --demo    使用生成的测试图，不截取屏幕\n  pinmark --check   只检查依赖与 Wayland 协议\n  pinmark --quit    关闭当前 Pinmark\n  pinmark --version 显示版本\n\n工具栏：矩形、箭头、复制、另存为、关闭。未选工具时左键拖动，\n再次点击已选工具取消选中；右键撤销，点击贴图后 Esc 关闭。\n复制成功后自动退出；另存为使用系统文件选择器并保留贴图。\n只支持 Wayland layer-shell；需要 grim、slurp、wl-copy 和桌面 Portal。", env!("CARGO_PKG_VERSION"));
+    println!("Pinmark {} — 原生 Wayland 截图贴图与标注\n\n用法：\n  pinmark           框选截图，原位贴图；再次运行重新框选\n  pinmark --demo    使用生成的测试图，不截取屏幕\n  pinmark --check   只检查依赖与 Wayland 协议\n  pinmark --quit    关闭所有 Pinmark 贴图\n  pinmark --version 显示版本\n\n工具栏：矩形、箭头、复制、另存为、图钉、关闭。未选工具时左键拖动，\n再次点击已选工具取消选中；右键撤销，点击贴图后 Esc 关闭当前这一张。\n图钉亮起后此图会保留，后续截图只替换未固定的图片；再次点击取消固定。\n复制成功关闭当前图片，其他已固定图片保留；最后一张关闭后程序退出。\n另存为使用系统文件选择器并保留图片。\n只支持 Wayland layer-shell；需要 grim、slurp、wl-copy 和桌面 Portal。", env!("CARGO_PKG_VERSION"));
 }
 
 fn check() -> bool {

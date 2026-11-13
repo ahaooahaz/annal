@@ -13,6 +13,7 @@ pub enum Button {
     Arrow,
     Copy,
     Save,
+    Pin,
     Close,
 }
 
@@ -39,7 +40,8 @@ pub fn button_at(point: Point) -> Option<Button> {
         1 => Some(Button::Arrow),
         2 => Some(Button::Copy),
         3 => Some(Button::Save),
-        4 => Some(Button::Close),
+        4 => Some(Button::Pin),
+        5 => Some(Button::Close),
         _ => None,
     }
 }
@@ -217,6 +219,7 @@ pub fn render_toolbar(
     pressed: Option<Button>,
     copy: CopyState,
     save: CopyState,
+    pinned: bool,
     scale: f32,
 ) -> Pixmap {
     let scale = scale.clamp(1.0, 4.0);
@@ -232,6 +235,7 @@ pub fn render_toolbar(
         Button::Arrow,
         Button::Copy,
         Button::Save,
+        Button::Pin,
         Button::Close,
     ];
     for (index, button) in buttons.iter().enumerate() {
@@ -251,6 +255,8 @@ pub fn render_toolbar(
             (22, 101, 52)
         } else if status == CopyState::Error {
             (153, 27, 27)
+        } else if *button == Button::Pin && pinned {
+            (180, 83, 9)
         } else if selected {
             (37, 99, 235)
         } else if hover == Some(*button) {
@@ -382,6 +388,28 @@ pub fn render_toolbar(
                     transform,
                 );
             }
+            Button::Pin => {
+                icon_line(
+                    &mut canvas,
+                    &[(cx - 6.0, 10.0), (cx + 6.0, 10.0)],
+                    &fg,
+                    transform,
+                );
+                icon_line(
+                    &mut canvas,
+                    &[
+                        (cx - 4.0, 10.0),
+                        (cx - 4.0, 19.0),
+                        (cx - 9.0, 23.0),
+                        (cx + 9.0, 23.0),
+                        (cx + 4.0, 19.0),
+                        (cx + 4.0, 10.0),
+                    ],
+                    &fg,
+                    transform,
+                );
+                icon_line(&mut canvas, &[(cx, 23.0), (cx, 31.0)], &fg, transform);
+            }
             Button::Close => {
                 icon_line(
                     &mut canvas,
@@ -493,7 +521,8 @@ mod tests {
         assert_eq!(button_at(Point::new(20.0, 20.0)), Some(Button::Rectangle));
         assert_eq!(button_at(Point::new(120.0, 20.0)), Some(Button::Copy));
         assert_eq!(button_at(Point::new(200.0, 20.0)), Some(Button::Save));
-        assert_eq!(button_at(Point::new(240.0, 20.0)), Some(Button::Close));
+        assert_eq!(button_at(Point::new(240.0, 20.0)), Some(Button::Pin));
+        assert_eq!(button_at(Point::new(290.0, 20.0)), Some(Button::Close));
         assert!(button_at(Point::new(2.0, 20.0)).is_none());
         assert!(button_at(Point::new(56.5, 20.0)).is_none());
         assert!(button_at(Point::new(f32::NAN, 20.0)).is_none());
@@ -503,9 +532,35 @@ mod tests {
             None,
             CopyState::Idle,
             CopyState::Done,
+            false,
             1.5,
         );
-        assert_eq!((toolbar.width(), toolbar.height()), (399, 60));
+        assert_eq!((toolbar.width(), toolbar.height()), (474, 60));
+    }
+
+    #[test]
+    fn pin_button_has_a_visible_toggle_state_without_affecting_other_buttons() {
+        let unpinned = render_toolbar(
+            Tool::Move,
+            None,
+            None,
+            CopyState::Idle,
+            CopyState::Idle,
+            false,
+            1.0,
+        );
+        let pinned = render_toolbar(
+            Tool::Move,
+            None,
+            None,
+            CopyState::Idle,
+            CopyState::Idle,
+            true,
+            1.0,
+        );
+        assert_ne!(unpinned.pixel(212, 8), pinned.pixel(212, 8));
+        assert_eq!(unpinned.pixel(12, 8), pinned.pixel(12, 8));
+        assert_eq!((pinned.width(), pinned.height()), (316, 40));
     }
 
     #[test]
