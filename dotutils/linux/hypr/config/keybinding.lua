@@ -7,7 +7,7 @@ local fileManager = "dolphin"
 local mainMod = "SUPER" -- Sets "Windows" key as main modifier
 
 -- Example binds, see https://wiki.hypr.land/configuring/core/binds/ for more
-hl.bind(mainMod .. " + Space", hl.dsp.global("caelestia:launcher"))
+hl.bind(mainMod .. " + Space", hl.dsp.exec_cmd("fuzzel"))
 hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal))
 local closeWindowBind = hl.bind(mainMod .. " + Q", hl.dsp.window.close())
 -- closeWindowBind:set_enabled(false)
@@ -126,8 +126,18 @@ end)
 
 -- hl.bind("F1", hl.dsp.exec_cmd("omasnap --editor=overlay"), { description = "Screenshot" })
 hl.bind("F1", hl.dsp.exec_cmd("$HOME/.local/bin/pinmark"), { description = "Region Screenshot" })
-hl.bind("F2", hl.dsp.exec_cmd("caelestia clipboard"), { description = "Clipboard History" })
-hl.bind(mainMod .. " + L", hl.dsp.global("caelestia:lock"))
+hl.bind(
+    "F2",
+    hl.dsp.exec_cmd([[
+       sh -c '
+           item=$(cliphist list | fuzzel --dmenu --prompt "clipboard: ") || exit 0
+           [ -n "$item" ] || exit 0
+           printf "%s\n" "$item" | cliphist decode | wl-copy
+       '
+   ]]),
+    { description = "Clipboard History" }
+)
+hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"))
 -- Super + . 将窗口移动到下一个工作区
 hl.bind("SUPER + period", hl.dsp.window.move({ workspace = "+1", follow = true }))
 -- Super + , 将窗口移动到上一个工作区
@@ -135,3 +145,5 @@ hl.bind("SUPER + comma", hl.dsp.window.move({ workspace = "-1", follow = true })
 hl.bind("SUPER + bracketright", hl.dsp.focus({ workspace = "+1" }), { repeating = true })
 hl.bind("SUPER + bracketleft", hl.dsp.focus({ workspace = "-1" }), { repeating = true })
 hl.bind("SUPER + Tab", hl.dsp.window.cycle_next())
+-- 将物理电源键 (XF86PowerOff) 绑定到 wlogout
+hl.bind("XF86PowerOff", hl.dsp.exec_cmd("wlogout"))

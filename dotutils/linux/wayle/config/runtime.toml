@@ -1,0 +1,64 @@
+[bar]
+scale = 0.800000011920929
+inset-ends = 0.15000000596046448
+padding = 0.0
+padding-ends = 0.0
+module-gap = 0.15000000596046448
+bg = "transparent"
+border-color = "#c01c28"
+button-variant = "icon-square"
+button-bg-opacity = 80
+button-rounding = "lg"
+
+[[bar.layout]]
+monitor = "*"
+show = true
+left = [
+    "cava",
+    "cpu",
+    "netstat",
+]
+center = [
+    "dashboard",
+    "hyprland-workspaces",
+]
+right = [
+    "systray",
+    "battery",
+    "bluetooth",
+    "network",
+    "clock",
+    "notifications",
+]
+
+[styling]
+matugen-scheme = "neutral"
+
+[styling.palette]
+bg = "#1d2021"
+surface = "#282828"
+elevated = "#3c3836"
+fg = "#ebdbb2"
+fg-muted = "#d5c4a1"
+primary = "#83a598"
+red = "#fb4934"
+yellow = "#fabd2f"
+green = "#b8bb26"
+blue = "#8ec07c"
+
+[modules.cava]
+style = "wave"
+
+[modules.dashboard]
+dropdown-reboot-command = "wlogout"
+dropdown-poweroff-command = "wlogout"
+
+[modules.hyprland-workspaces]
+display-mode = "icon"
+app-icons-show = true
+
+[wallpaper]
+cycling-enabled = true
+cycling-directory = "/home/how/Pictures/Wallpapers"
+cycling-interval-mins = 10
+cycling-same-image = true
