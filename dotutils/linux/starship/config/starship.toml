@@ -1,58 +1,78 @@
-"$schema" = 'https://starship.rs/config-schema.json'
-
 add_newline = false
 
-format = """
-[](color_green)\
-$os\
-[](bg:color_yellow fg:color_green)\
+palette = "kanagawa-dragon"
+scan_timeout = 100
+
+format = """$username\
+$hostname\
 $directory\
-[](fg:color_yellow bg:color_aqua)\
-$git_branch\
-${custom.git_status}\
-[](fg:color_aqua bg:color_blue)\
-[](fg:color_blue bg:color_bg3)\
-$docker_context\
-$conda\
-$pixi\
-[](fg:color_bg3 bg:color_bg1)\
-$time\
-[ ](fg:color_bg1)\
-$character"""
+$sudo\
+${env_var.gsd_remote}\
+${env_var.gsd_branch}\
+${env_var.gsd_status}\
+${env_var.gsd_ahead_behind}\
+${env_var.gsd_action}\
+${package}${nodejs}${python}${bun}${golang}${php}\
+${battery}\
+$fill${cmd_duration}\n${time}$character"""
 
-right_format = """\
-"""
+[palettes.kanagawa-dragon]
 
-palette = 'gruvbox_dark'
+background = "#181616"
+current_line = "#2d4f67"
+foreground = "#f5f5f5"
+comment = "#b0b0c0"
 
-# Keep only a gray prompt character when Zsh submits a command line.
-[profiles]
-transient = """
-[](color_green)\
-$os\
-[](bg:color_yellow fg:color_green)\
-[](fg:color_yellow bg:color_aqua)\
-[](fg:color_aqua bg:color_blue)\
-[](fg:color_blue bg:color_bg3)\
-[](fg:color_bg3 bg:color_bg1)\
-[ ](fg:color_bg1)\
-$character"""
+cyan = "#00d7ff"
+green = "#50fa7b"
+orange = "#ff9f1c"
+pink = "#ff3b9d"
+purple = "#bd93f9"
+red = "#ff5f5f"
+yellow = "#ffe600"
+white = "#ffffff"
+blue = "#5fafff"
 
-[palettes.gruvbox_dark]
-color_fg0 = '#fbf1c7'
-color_bg1 = '#3c3836'
-color_bg3 = '#665c54'
-color_blue = '#458588'
-color_aqua = '#689d6a'
-color_green = '#98971a'
-color_orange = '#d65d0e'
-color_purple = '#b16286'
-color_red = '#cc241d'
-color_yellow = '#d79921'
+
+[directory.substitutions]
+"Escritorio" = "󰟀 "
+
+[directory]
+style = "bold cyan"
+read_only = "  "
+read_only_style = "yellow"
+home_symbol = "~"
+truncation_symbol = "…/"
+
+[character]
+success_symbol = "[>](bold green)"
+error_symbol = "[>](bold red)"
+vicmd_symbol = "[v](bold purple)"
+
+[username]
+show_always = true
+style_user = "bold pink"
+format = "[$user]($style)"
+
+[hostname]
+ssh_only = false
+style = "bold purple"
+format = "@[$hostname]($style) "
+
+[sudo]
+symbol = " "
+style = "red"
+disabled = false
+
+[container]
+symbol = ' '
+style = 'bold red dimmed'
+format = '[$symbol \[$name\] ]($style)'
 
 [os]
 disabled = false
-style = "bg:color_green fg:color_fg0"
+style = "bold white"
+format = "[$symbol]($style)"
 
 [os.symbols]
 Windows = "󰍲 "
@@ -78,140 +98,84 @@ Redhat = "󱄛 "
 RedHatEnterprise = "󱄛 "
 Pop = " "
 
-[username]
-show_always = true
-style_user = "bg:color_orange fg:color_fg0"
-style_root = "bg:color_orange fg:color_fg0"
-format = '[$user ]($style)'
-
-[directory]
-style = "fg:color_fg0 bg:color_yellow"
-format = "[ $path ]($style)"
-truncation_length = 3
-truncation_symbol = "…/"
-
-[directory.substitutions]
-"Documents" = "󰈙 "
-"Downloads" = " "
-"Music" = "󰝚 "
-"Pictures" = " "
-"Developer" = "󰲋 "
-
 [git_branch]
-symbol = ""
-style = "bg:color_aqua"
-format = '[[ $symbol $branch ](fg:color_fg0 bg:color_aqua)]($style)'
+disabled = true
 
-# Raw native status is the fallback when gitstatusd is unavailable.
 [git_status]
-format = '$all_status$ahead_behind'
+disabled = true
 
-[custom.git_status]
-description = 'Asynchronous gitstatusd status, with a native Starship fallback'
-when = true
-shell = ['sh']
-command = '''
-if [ "$STARSHIP_SHELL" = zsh ] && [ "$STARSHIP_GITSTATUS_READY" = 1 ] &&
-   [ "$STARSHIP_GITSTATUS_CONTEXT" = "$PWD:${GIT_DIR-}:${GIT_WORK_TREE-}" ]; then
-    printf '%s' "$STARSHIP_GITSTATUS"
-else
-    starship module git_status
-fi
-'''
-style = "bg:color_aqua"
-format = '[[($output )](fg:color_red bg:color_aqua)]($style)'
+[env_var.gsd_remote]
+variable = 'GSD_REMOTE'
+style = 'foreground'
+format = '[$env_value ]($style)'
+
+[env_var.gsd_repo]
+variable = 'GSD_REPO'
+style = 'bold orange'
+format = '[$env_value ]($style)'
+
+[env_var.gsd_branch]
+variable = 'GSD_BRANCH'
+style = "bold orange"
+format = '[on  $env_value ]($style)'
+
+[env_var.gsd_status]
+variable = 'GSD_STATUS'
+style = 'bold red'
+format = '[$env_value ]($style)'
+
+[env_var.gsd_ahead_behind]
+variable = 'GSD_AHEAD_BEHIND'
+style = 'bold yellow'
+format = '[$env_value ]($style)'
+
+[env_var.gsd_action]
+variable = 'GSD_ACTION'
+style = 'bold yellow'
+format = '[\($env_value\) ]($style)'
+
+[package]
+symbol = " "
+style = "yellow"
 
 [nodejs]
-symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
-
-[bun]
-symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
-
-[c]
-symbol = " "
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
-
-[cpp]
-symbol = " "
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
-
-[rust]
-symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
-
-[golang]
-symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
-
-[php]
-symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
-
-[java]
-symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
-
-[jj_bookmark]
-symbol = ""
-style = "bg:color_aqua"
-format = '[[ $symbol $bookmark(@$remote)$diverged( \\(+$overflow_count others\\)) ](fg:color_fg0 bg:color_aqua)]($style)'
-
-[jj_status]
-style = "bg:color_aqua"
-format = '[[($all )](fg:color_fg0 bg:color_aqua)]($style)'
-
-[kotlin]
-symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
-
-[haskell]
-symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
+symbol = " "
+style = "green"
 
 [python]
-symbol = ""
-style = "bg:color_blue"
-format = '[[ $symbol( $version) ](fg:color_fg0 bg:color_blue)]($style)'
+symbol = " "
+style = "blue"
 
-[docker_context]
-symbol = ""
-style = "bg:color_bg3"
-format = '[[ $symbol( $context) ](fg:#83a598 bg:color_bg3)]($style)'
+[bun]
+symbol = " "
+style = "yellow"
 
-[conda]
-style = "bg:color_bg3"
-format = '[[ $symbol( $environment) ](fg:#83a598 bg:color_bg3)]($style)'
+[golang]
+symbol = " "
+style = "cyan"
 
-[pixi]
-style = "bg:color_bg3"
-format = '[[ $symbol( $version)( $environment) ](fg:color_fg0 bg:color_bg3)]($style)'
+[php]
+symbol = " "
+style = "purple"
 
 [time]
 disabled = false
-time_format = "%R"
-style = "bg:color_bg1"
-format = '[[  $time ](fg:color_fg0 bg:color_bg1)]($style)'
+time_format = "%H:%M "
+style = "cyan"
+format = "[$time]($style)"
 
-[line_break]
+[battery]
 disabled = false
+full_symbol = " "
+charging_symbol = " "
+discharging_symbol = " "
+format = '[$symbol$percentage]($style) '
 
-[character]
-disabled = false
-success_symbol = '[>](bold fg:color_green)'
-error_symbol = '[>](bold fg:color_red)'
-vimcmd_symbol = '[<](bold fg:color_green)'
-vimcmd_replace_one_symbol = '[<](bold fg:color_purple)'
-vimcmd_replace_symbol = '[<](bold fg:color_purple)'
-vimcmd_visual_symbol = '[<](bold fg:color_yellow)'
+[[battery.display]]
+threshold = 100
+style = "bold green"
+
+[cmd_duration]
+min_time = 2000
+style = "bold yellow"
+format = '[ took $duration]($style) '

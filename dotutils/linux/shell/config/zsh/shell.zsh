@@ -14,7 +14,6 @@ include -f "${HOME}/.zcomet/bin/zcomet.zsh"
 function after_init() {
     add-zsh-hook -d precmd after_init
     eval "$(starship init zsh)"
-    starship_gitstatus_init
 
     autopair-init
     # Keep terminal shortcuts on the default emacs keymap.
@@ -48,7 +47,6 @@ function after_init() {
 # Use Zsh's native emacs editing instead of loading zsh-vi-mode.
 bindkey -e
 autoload -Uz add-zsh-hook
-add-zsh-hook precmd after_init
 
 zcomet load ohmyzsh lib {completion,clipboard,git}.zsh
 #zcomet load ohmyzsh plugins/autojump
@@ -67,19 +65,132 @@ zcomet load hlissner/zsh-autopair
 # zcomet load romkatv/powerlevel10k
 zcomet load trapd00r/LS_COLORS
 
-# Register before syntax highlighting wraps the shared ZLE hook dispatcher.
-# Registering afterwards can make add-zle-hook-widget wrap its own dispatcher.
-function starship_transient_prompt() {
-    emulate -L zsh
-    [[ $CONTEXT == start ]] || return 0
-    local PROMPT='$(starship prompt --profile transient --status="${STARSHIP_CMD_STATUS:-0}" --keymap="${KEYMAP:-emacs}")'
-    local RPROMPT=''
-    zle .reset-prompt
-    # Flush the redraw before the local prompts are restored on return.
-    zle -R
+# gitstatusd -> GSD_* -> Starship env_var.
+# Load the binding before defining and starting the integration.
+zcomet load romkatv/gitstatus
+function _starship_gsd_clear() {
+    emulate -L zsh -o no_aliases
+    unset GSD_REMOTE GSD_REPO GSD_BRANCH GSD_STATUS GSD_AHEAD_BEHIND GSD_ACTION
 }
-autoload -Uz add-zle-hook-widget
-add-zle-hook-widget line-finish starship_transient_prompt
+
+function _starship_gsd_publish() {
+    emulate -L zsh -o no_aliases
+    _starship_gsd_clear
+    [[ $VCS_STATUS_RESULT == ok-* ]] || return 0
+
+    local branch=$VCS_STATUS_LOCAL_BRANCH
+    [[ -n $branch ]] || branch="${VCS_STATUS_COMMIT[1,7]}"
+    local repo=${VCS_STATUS_REMOTE_URL:t}
+    repo=${repo%.git}
+    [[ -n $repo ]] || repo=${VCS_STATUS_WORKDIR:t}
+    export GSD_REPO=$repo GSD_BRANCH=$branch
+
+    case $VCS_STATUS_REMOTE_URL in
+        *github.com*) export GSD_REMOTE='' ;;
+        *gitlab.com*) export GSD_REMOTE='' ;;
+        *)            export GSD_REMOTE='' ;;
+    esac
+
+    # ASCII status markers, each one terminal cell wide.
+    local ahead=">"
+    local behind="<"
+    local diverged="~"
+    local conflicted="!"
+    local up_to_date="="
+    local untracked="?"
+    local modified="*"
+    local staged="+"
+    local renamed="R" # Reserved: gitstatusd reports renames as deletion/addition.
+    local deleted="-"
+
+    local flags=''
+    (( VCS_STATUS_HAS_CONFLICTED )) && flags+=$conflicted
+    (( VCS_STATUS_STASHES )) && flags+='$'
+    (( VCS_STATUS_NUM_STAGED_DELETED + VCS_STATUS_NUM_UNSTAGED_DELETED )) && flags+=$deleted
+    (( VCS_STATUS_NUM_UNSTAGED > VCS_STATUS_NUM_UNSTAGED_DELETED )) && flags+=$modified
+    (( VCS_STATUS_HAS_STAGED )) && flags+=$staged
+    (( VCS_STATUS_HAS_UNTRACKED )) && flags+=$untracked
+    [[ -z $flags ]] || export GSD_STATUS=$flags
+
+    local ahead_behind
+    if (( VCS_STATUS_COMMITS_AHEAD && VCS_STATUS_COMMITS_BEHIND )); then
+        ahead_behind="${diverged}${VCS_STATUS_COMMITS_AHEAD}/${VCS_STATUS_COMMITS_BEHIND}"
+    elif (( VCS_STATUS_COMMITS_AHEAD )); then
+        ahead_behind="${ahead}${VCS_STATUS_COMMITS_AHEAD}"
+    elif (( VCS_STATUS_COMMITS_BEHIND )); then
+        ahead_behind="${behind}${VCS_STATUS_COMMITS_BEHIND}"
+    else
+        ahead_behind=$up_to_date
+    fi
+    export GSD_AHEAD_BEHIND=$ahead_behind
+    [[ -z $VCS_STATUS_ACTION ]] || export GSD_ACTION=$VCS_STATUS_ACTION
+    return 0
+}
+
+function _starship_gsd_result() {
+    emulate -L zsh -o no_aliases
+    _starship_gsd_pending=0
+
+    # Do not display a result for a directory or Git context we have left.
+    local context="$PWD:${GIT_DIR-}:${GIT_WORK_TREE-}"
+    if [[ $context != $_starship_gsd_request_context ]]; then
+        _starship_gsd_update
+        return 0
+    fi
+
+    local old_remote=${GSD_REMOTE-} old_repo=${GSD_REPO-} old_branch=${GSD_BRANCH-}
+    local old_status=${GSD_STATUS-} old_ahead=${GSD_AHEAD_BEHIND-} old_action=${GSD_ACTION-}
+    _starship_gsd_publish
+
+    # Re-render only if visible Git information changed, and only inside ZLE.
+    if [[ $old_remote != ${GSD_REMOTE-} || $old_repo != ${GSD_REPO-} ||
+          $old_branch != ${GSD_BRANCH-} || $old_status != ${GSD_STATUS-} ||
+          $old_ahead != ${GSD_AHEAD_BEHIND-} || $old_action != ${GSD_ACTION-} ]] && zle; then
+        zle .reset-prompt
+        zle -R
+    fi
+    return 0
+}
+
+function _starship_gsd_update() {
+    emulate -L zsh -o no_aliases
+    local context="$PWD:${GIT_DIR-}:${GIT_WORK_TREE-}"
+    if [[ $context != $_starship_gsd_context ]]; then
+        _starship_gsd_clear
+        _starship_gsd_context=$context
+    fi
+
+    if ! 'gitstatus_check' "$_starship_gsd_instance"; then
+        _starship_gsd_pending=0
+        _starship_gsd_clear
+        return 0
+    fi
+    # gitstatusd forbids concurrent requests on the same instance.
+    (( _starship_gsd_pending )) && return 0
+
+    _starship_gsd_request_context=$context
+    _starship_gsd_pending=1
+    if ! 'gitstatus_query' -d "$PWD" -t 0 -c _starship_gsd_result "$_starship_gsd_instance"; then
+        _starship_gsd_pending=0
+        _starship_gsd_clear
+    elif [[ $VCS_STATUS_RESULT != tout ]]; then
+        # Handle immediate non-repository replies as well as async callbacks.
+        _starship_gsd_result
+    fi
+    return 0
+}
+
+typeset -g _starship_gsd_instance=STARSHIP_GSD
+typeset -gi _starship_gsd_pending=${_starship_gsd_pending:-0}
+typeset -g _starship_gsd_context=${_starship_gsd_context-}
+typeset -g _starship_gsd_request_context=${_starship_gsd_request_context-}
+
+'gitstatus_start' -s -1 -u -1 -c -1 -d -1 "$_starship_gsd_instance" || return 1
+
+# Start the first Git query before initializing Starship at the first prompt.
+add-zsh-hook precmd _starship_gsd_update
+add-zsh-hook precmd after_init
+# gitstatusd end
 
 zcomet load zdharma-continuum/fast-syntax-highlighting
 
