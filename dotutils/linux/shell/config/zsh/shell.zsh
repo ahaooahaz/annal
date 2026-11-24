@@ -86,9 +86,9 @@ function _starship_gsd_publish() {
     export GSD_REPO=$repo GSD_BRANCH=$branch
 
     case $VCS_STATUS_REMOTE_URL in
-        *github.com*) export GSD_REMOTE='' ;;
-        *gitlab.com*) export GSD_REMOTE='' ;;
-        *)            export GSD_REMOTE='' ;;
+    *github.com*) export GSD_REMOTE='' ;;
+    *gitlab.com*) export GSD_REMOTE='' ;;
+    *) export GSD_REMOTE='' ;;
     esac
 
     # ASCII status markers, each one terminal cell wide.
@@ -104,20 +104,20 @@ function _starship_gsd_publish() {
     local deleted="-"
 
     local flags=''
-    (( VCS_STATUS_HAS_CONFLICTED )) && flags+=$conflicted
-    (( VCS_STATUS_STASHES )) && flags+='$'
-    (( VCS_STATUS_NUM_STAGED_DELETED + VCS_STATUS_NUM_UNSTAGED_DELETED )) && flags+=$deleted
-    (( VCS_STATUS_NUM_UNSTAGED > VCS_STATUS_NUM_UNSTAGED_DELETED )) && flags+=$modified
-    (( VCS_STATUS_HAS_STAGED )) && flags+=$staged
-    (( VCS_STATUS_HAS_UNTRACKED )) && flags+=$untracked
+    ((VCS_STATUS_HAS_CONFLICTED)) && flags+=$conflicted
+    ((VCS_STATUS_STASHES)) && flags+='$'
+    ((VCS_STATUS_NUM_STAGED_DELETED + VCS_STATUS_NUM_UNSTAGED_DELETED)) && flags+=$deleted
+    ((VCS_STATUS_NUM_UNSTAGED > VCS_STATUS_NUM_UNSTAGED_DELETED)) && flags+=$modified
+    ((VCS_STATUS_HAS_STAGED)) && flags+=$staged
+    ((VCS_STATUS_HAS_UNTRACKED)) && flags+=$untracked
     [[ -z $flags ]] || export GSD_STATUS=$flags
 
     local ahead_behind
-    if (( VCS_STATUS_COMMITS_AHEAD && VCS_STATUS_COMMITS_BEHIND )); then
+    if ((VCS_STATUS_COMMITS_AHEAD && VCS_STATUS_COMMITS_BEHIND)); then
         ahead_behind="${diverged}${VCS_STATUS_COMMITS_AHEAD}/${VCS_STATUS_COMMITS_BEHIND}"
-    elif (( VCS_STATUS_COMMITS_AHEAD )); then
+    elif ((VCS_STATUS_COMMITS_AHEAD)); then
         ahead_behind="${ahead}${VCS_STATUS_COMMITS_AHEAD}"
-    elif (( VCS_STATUS_COMMITS_BEHIND )); then
+    elif ((VCS_STATUS_COMMITS_BEHIND)); then
         ahead_behind="${behind}${VCS_STATUS_COMMITS_BEHIND}"
     else
         ahead_behind=$up_to_date
@@ -144,8 +144,8 @@ function _starship_gsd_result() {
 
     # Re-render only if visible Git information changed, and only inside ZLE.
     if [[ $old_remote != ${GSD_REMOTE-} || $old_repo != ${GSD_REPO-} ||
-          $old_branch != ${GSD_BRANCH-} || $old_status != ${GSD_STATUS-} ||
-          $old_ahead != ${GSD_AHEAD_BEHIND-} || $old_action != ${GSD_ACTION-} ]] && zle; then
+        $old_branch != ${GSD_BRANCH-} || $old_status != ${GSD_STATUS-} ||
+        $old_ahead != ${GSD_AHEAD_BEHIND-} || $old_action != ${GSD_ACTION-} ]] && zle; then
         zle .reset-prompt
         zle -R
     fi
@@ -166,7 +166,7 @@ function _starship_gsd_update() {
         return 0
     fi
     # gitstatusd forbids concurrent requests on the same instance.
-    (( _starship_gsd_pending )) && return 0
+    ((_starship_gsd_pending)) && return 0
 
     _starship_gsd_request_context=$context
     _starship_gsd_pending=1
