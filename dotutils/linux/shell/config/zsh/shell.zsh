@@ -191,6 +191,20 @@ typeset -g _starship_gsd_request_context=${_starship_gsd_request_context-}
 add-zsh-hook precmd _starship_gsd_update
 add-zsh-hook precmd after_init
 # gitstatusd end
+#
+
+function accept_line_nonempty() {
+    emulate -L zsh
+
+    if [[ $CONTEXT == start && -z ${BUFFER//[[:space:]]/} ]]; then
+        return 0
+    fi
+
+    zle .accept-line
+}
+
+zle -N accept-line-nonempty accept_line_nonempty
+bindkey -M emacs '^M' accept-line-nonempty
 
 zcomet load zdharma-continuum/fast-syntax-highlighting
 
