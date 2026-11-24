@@ -3,11 +3,14 @@
 ---------------------
 local terminal = "kitty"
 local fileManager = "dolphin"
+local launcher = "fuzzel"
+local lock = "hyprlock"
+local powerctl = "wlogout"
 
 local mainMod = "SUPER" -- Sets "Windows" key as main modifier
 
 -- Example binds, see https://wiki.hypr.land/configuring/core/binds/ for more
-hl.bind(mainMod .. " + Space", hl.dsp.exec_cmd("fuzzel"))
+hl.bind(mainMod .. " + Space", hl.dsp.exec_cmd(launcher))
 hl.bind(mainMod .. " + Return", hl.dsp.exec_cmd(terminal))
 local closeWindowBind = hl.bind(mainMod .. " + Q", hl.dsp.window.close())
 -- closeWindowBind:set_enabled(false)
@@ -46,6 +49,7 @@ end
 
 hl.bind(mainMod .. " + C", clipboardShortcut("C"))
 hl.bind(mainMod .. " + V", clipboardShortcut("V"))
+hl.bind(mainMod .. " + F", clipboardShortcut("F"))
 hl.bind(mainMod .. " + A", hl.dsp.send_shortcut({ mods = "CTRL", key = "A" }))
 
 hl.bind("ALT + Tab", hl.dsp.window.cycle_next())
@@ -102,9 +106,13 @@ hl.bind("XF86AudioPlay", hl.dsp.exec_cmd("playerctl play-pause"), { locked = tru
 hl.bind("XF86AudioPrev", hl.dsp.exec_cmd("playerctl previous"), { locked = true })
 
 -- 将当前窗口“最小化”到特殊工作区，再按一次则恢复
-hl.bind("SUPER + H", function()
+hl.bind(mainMod .. " + H", function()
     -- 检查特殊工作区是否已存在（即已有最小化的窗口）
     if hl.get_workspace("special:minimized") then
+        -- 拖拽 = 移动窗口
+        hl.bind("ALT + mouse:272", hl.dsp.window.drag(), { mouse = true })
+        -- 单纯点击（不拖动）= 切换悬浮
+        hl.bind("ALT + mouse:272", hl.dsp.window.float({ action = "toggle" }), { click = true })
         -- 恢复：将带 "minimized" 标签的窗口移回当前工作区，并清除标签
         hl.dispatch(hl.dsp.window.move({
             workspace = hl.get_active_workspace(),
@@ -137,13 +145,19 @@ hl.bind(
    ]]),
     { description = "Clipboard History" }
 )
-hl.bind(mainMod .. " + L", hl.dsp.exec_cmd("hyprlock"))
+hl.bind(mainMod .. " + L", hl.dsp.exec_cmd(lock))
 -- Super + . 将窗口移动到下一个工作区
-hl.bind("SUPER + period", hl.dsp.window.move({ workspace = "+1", follow = true }))
+hl.bind(mainMod .. " + period", hl.dsp.window.move({ workspace = "+1", follow = true }))
 -- Super + , 将窗口移动到上一个工作区
-hl.bind("SUPER + comma", hl.dsp.window.move({ workspace = "-1", follow = true }))
-hl.bind("SUPER + bracketright", hl.dsp.focus({ workspace = "+1" }), { repeating = true })
-hl.bind("SUPER + bracketleft", hl.dsp.focus({ workspace = "-1" }), { repeating = true })
-hl.bind("SUPER + Tab", hl.dsp.window.cycle_next())
+hl.bind(mainMod .. " + comma", hl.dsp.window.move({ workspace = "-1", follow = true }))
+hl.bind(mainMod .. " + bracketright", hl.dsp.focus({ workspace = "+1" }), { repeating = true })
+hl.bind(mainMod .. " + bracketleft", hl.dsp.focus({ workspace = "-1" }), { repeating = true })
+hl.bind(mainMod .. " + Tab", hl.dsp.window.cycle_next())
 -- 将物理电源键 (XF86PowerOff) 绑定到 wlogout
-hl.bind("XF86PowerOff", hl.dsp.exec_cmd("wlogout"))
+hl.bind("XF86PowerOff", hl.dsp.exec_cmd(powerctl))
+-- 拖拽 = 移动窗口
+hl.bind("ALT + mouse:272", hl.dsp.window.drag(), { mouse = true })
+-- 单纯点击（不拖动）= 切换悬浮
+hl.bind("ALT + mouse:272", hl.dsp.window.float({ action = "toggle" }), { click = true })
+-- Alt + 右键：任意位置拖动缩放浮动窗口 ✅
+hl.bind("ALT + mouse:273", hl.dsp.window.resize(), { mouse = true })

@@ -14,21 +14,21 @@ button-rounding = "lg"
 monitor = "*"
 show = true
 left = [
+    "notifications",
     "cava",
-    "cpu",
-    "netstat",
 ]
 center = [
     "dashboard",
     "hyprland-workspaces",
 ]
 right = [
+    "ram",
+    "cpu",
     "systray",
     "battery",
     "bluetooth",
     "network",
     "clock",
-    "notifications",
 ]
 
 [styling]
@@ -48,6 +48,11 @@ blue = "#8ec07c"
 
 [modules.cava]
 style = "wave"
+bar-width = 4
+
+[modules.clock]
+format = "%a %b %d %H:%M:%S"
+dropdown-show-seconds = true
 
 [modules.dashboard]
 dropdown-reboot-command = "wlogout"
@@ -56,6 +61,11 @@ dropdown-poweroff-command = "wlogout"
 [modules.hyprland-workspaces]
 display-mode = "icon"
 app-icons-show = true
+
+[modules.netstat]
+border-color = "accent-hover"
+icon-bg-color = "accent"
+label-color = "accent"
 
 [wallpaper]
 cycling-enabled = true
