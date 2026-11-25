@@ -169,7 +169,7 @@ style = "cyan"
 format = "[$time]($style)"
 
 [battery]
-disabled = false
+disabled = true
 full_symbol = " "
 charging_symbol = " "
 discharging_symbol = " "
@@ -210,7 +210,7 @@ repeat = false
 disabled = false
 threshold = 0
 style = "bold orange"
-format = " [$ram_pct $ram | swap $swap_pct]($style)"
+format = " [$ram]($style)"
 
 [fill]
 symbol = "."
