@@ -11,7 +11,6 @@
 hl.on("hyprland.start", function()
     hl.exec_cmd("fcitx5 -d --replace")
     hl.exec_cmd("wayle panel start")
-    hl.exec_cmd("nutstore")
     hl.exec_cmd("wl-paste --type text --watch cliphist store") -- 监听文本复制
     hl.exec_cmd("wl-paste --type image --watch cliphist store") -- 监听图片复制
     hl.exec_cmd("wl-clip-persist --clipboard regular")
