@@ -14,6 +14,7 @@ include -f "${HOME}/.zcomet/bin/zcomet.zsh"
 function after_init() {
     add-zsh-hook -d precmd after_init
     eval "$(starship init zsh)"
+    export LS_COLORS="$(vivid generate lava)"
 
     autopair-init
     # Keep terminal shortcuts on the default emacs keymap.
@@ -63,7 +64,7 @@ AUTOPAIR_INHIBIT_INIT=1
 zcomet load hlissner/zsh-autopair
 
 # zcomet load romkatv/powerlevel10k
-zcomet load trapd00r/LS_COLORS
+# zcomet load trapd00r/LS_COLORS
 
 # gitstatusd -> GSD_* -> Starship env_var.
 # Load the binding before defining and starting the integration.
@@ -94,7 +95,7 @@ function _starship_gsd_publish() {
     # ASCII status markers, each one terminal cell wide.
     local ahead=">"
     local behind="<"
-    local diverged="~"
+    local diverged="x"
     local conflicted="!"
     local up_to_date="="
     local untracked="?"
