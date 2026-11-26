@@ -1,0 +1,6 @@
+[Unit]
+Description=Nutstore sync every 2 hours
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/scripts/nutstore-sync.sh

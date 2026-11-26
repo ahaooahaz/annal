@@ -1,0 +1,9 @@
+[Unit]
+Description=Timer for Nutstore sync
+
+[Timer]
+OnCalendar=*-*-* 00/2:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target
